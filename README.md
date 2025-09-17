@@ -37,7 +37,7 @@
   <h3 align="center">BallisticX</h3>
 
   <p align="center">
-    A comprehensive Typescript library that provides common, internal, external and terminal ballistics calculations and functionality!
+    A comprehensive TypeScript library that provides common, internal, external and terminal ballistics calculations and functionality!
     <br />
     <a href=""><strong>Explore the docs »</strong></a>
     <br />
@@ -83,14 +83,14 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-BallisticX is a base Typescript library for ballistic calculation, it draws some inspiration from the GNU Ballistic computer but was initiated as a way for the author to learn the deeper nuances of small arms ballistics. The library provides calculation functions for the following sub-disciplines of ballistics:
+BallisticX is a Typescript library for ballistic calculation, it draws inspiration from the GNU Ballistic computer but was initiated as a way for the author to learn the deeper nuances of small arms ballistics. The library provides calculation functions for the following sub-disciplines of ballistics:
 
 * Internal
 * External
 * Terminal
 
 
-While there are tests within the project to execute the functionality, this project in and of itself is not meant to be a end user product rather it is the basic library for ballistics modeling and calculations. I have plans for further visualization projects that will build on-top of this library to provide things like ballistic computer, LIDAR, tracking, pressure testing, trajectory modeling etc.
+While there are tests within the project to execute the functionality, this project, in and of itself is, not meant to be a end user product, rather it is the basic library for ballistics modeling and calculations. I have plans for further visualization projects that will build on-top of this library to provide things like ballistic computer, LIDAR, tracking, pressure testing, trajectory modeling etc.
 
 
 
@@ -197,7 +197,7 @@ Distributed under the Apache 2.0 License. See `LICENSE.txt` for more information
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@your_twitter](https://x.com/klsmeltzer) - ksmeltzer@gmail.com
+Kenton Smeltzer - [@klsmeltzer](https://x.com/klsmeltzer) - ksmeltzer@gmail.com
 
 Project Link: [https://github.com/ksmeltzer/BallisticX](https://github.com/ksmeltzer/BallisticX)
 

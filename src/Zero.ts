@@ -1,0 +1,98 @@
+import { DragFunction, GRAVITY } from "./BalisticX.js";
+import { Retard } from "./Retard.js";
+
+     export class Zero {
+        /**
+         * ZeroAngle
+         *
+         * Determines the bore angle needed to achieve a target zero at Range yards
+         * (at standard conditions and on level ground.)
+         *
+         * @param drag DragFunction enum value
+         * @param DragCoefficient The coefficient of drag for the projectile
+         * @param Vi The initial velocity of the projectile, in feet/s
+         * @param SightHeight The height of the sighting system above the bore centerline, in inches
+         * @param ZeroRange The range in yards at which you wish the projectile to intersect yIntercept
+         * @param yIntercept The height, in inches, you wish for the projectile to be when it crosses ZeroRange yards
+         * @return The angle of the bore relative to the sighting system, in degrees
+         */
+        public static ZeroAngle(
+            drag: DragFunction,
+            DragCoefficient: number,
+            Vi: number,
+            SightHeight: number,
+            ZeroRange: number,
+            yIntercept: number
+        ): number {
+            // Numerical Integration variables
+            let t = 0;
+            let dt = 1 / Vi;
+            let y = -SightHeight / 12;
+            let x = 0;
+            let da = Angle.DegreeToRadian(14);
+
+            // State variables for each integration
+            let v = 0, vx = 0, vy = 0;
+            let vx1 = 0, vy1 = 0;
+            let dv = 0, dvx = 0, dvy = 0;
+            let Gx = 0, Gy = 0;
+
+            let angle = 0;
+            let quit = false;
+
+            // Successive approximation loop
+            for (angle = 0; !quit; angle = angle + da) {
+                vy = Vi * Math.sin(angle);
+                vx = Vi * Math.cos(angle);
+                Gx = GRAVITY * Math.sin(angle);
+                Gy = GRAVITY * Math.cos(angle);
+
+                for (t = 0, x = 0, y = -SightHeight / 12; x <= ZeroRange * 3; t = t + dt) {
+                    vy1 = vy;
+                    vx1 = vx;
+                    v = Math.sqrt(vx * vx + vy * vy);
+                    dt = 1 / v;
+
+                    dv = Retard.CalcRetard(drag, DragCoefficient, v);
+                    dvy = -dv * vy / v * dt;
+                    dvx = -dv * vx / v * dt;
+
+                    vy += (dvy + dt * Gy);
+                    vx += (dvx + dt * Gx);
+
+                    x += (dt * (vx + vx1) / 2);
+                    y += (dt * (vy + vy1) / 2);
+
+                    // Break early to save CPU time if we won't find a solution
+                    if ((vy < 0) && (y < yIntercept)) {
+                        break;
+                    }
+
+                    if (vy > 3 * vx) {
+                        break;
+                    }
+                }
+
+                if ((y > yIntercept) && (da > 0)) {
+                    da = -da / 2;
+                }
+
+                if ((y < yIntercept) && (da < 0)) {
+                    da = -da / 2;
+                }
+
+                // If our accuracy is sufficient, we can stop approximating
+                if (Math.abs(da) < Angle.MOAToRadian(0.01)) {
+                    quit = true;
+                }
+
+                // If we exceed the 45 degree launch angle, then the projectile just won't get there
+                if (angle > Angle.DegreeToRadian(45)) {
+                    quit = true;
+                }
+            }
+
+            // Convert to degrees for return value.
+            return Angle.RadianToDegree(angle);
+        }
+    }

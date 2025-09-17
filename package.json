@@ -1,0 +1,35 @@
+{
+  "name": "balistix",
+  "version": "1.0.0",
+  "description": "Extenal Balistics library",
+  "main": "index.js",
+  "type": "module",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "vitest",
+    "clean": "rm -rf ./dist",
+    "build": "tsc",
+    "prepack": "npm run clean && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": " "
+  },
+  "keywords": [
+    "balistics library"
+  ],
+  "author": "Kenton Smeltzer",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "decimal": "^0.0.2",
+    "decimal.js": "^10.6.0",
+    "temperature-util": "^1.0.5",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

@@ -24,7 +24,11 @@ import logger from "./util/Logger.js";
             let A = -1;
             let M = -1;
 
-            switch (drag_func) {
+            switch (drag_func) { 
+                //TODO: This is hacky kenton you can do better than this and make it much cleaner
+                // move all of these values into an ordered set and do a lookup. I know you where 
+                //just getting it done while learning ballistics, but do better. Switches and If's
+                //come on man, come on!!!! The file name is supposed to describe the function, not you.
                 case DragFunction.G1:
                     if (vp > 4230) { A = 1.477404177730177e-04; M = 1.9565; }
                     else if (vp > 3680) { A = 1.920339268755614e-04; M = 1.925; }

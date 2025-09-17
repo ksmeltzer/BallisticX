@@ -145,9 +145,9 @@ import type { CompUnit } from "./BalisticX.js";
         /** Helper to get CompUnit at position, with bounds check */
         private getCompUnit(position: number): CompUnit {
             if (position >= this._sln.length) {
-                return this._sln[this._sln.length - 1];
+                return this._sln[this._sln.length - 1] as CompUnit;
             } else {
-                return this._sln[position];
+                return this._sln[position] as CompUnit;
             }
         }
 

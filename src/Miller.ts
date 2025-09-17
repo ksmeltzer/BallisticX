@@ -1,5 +1,8 @@
-
-
+/**
+ * An implementation of the Miller twist rule
+ * @see https://en.wikipedia.org/wiki/Miller_twist_rule
+ * @see https://www.vcalc.com/wiki/miller-twist-rule
+ */
      export class Miller {
         public diameter: number = 1.0;
         public length: number = 1.0;

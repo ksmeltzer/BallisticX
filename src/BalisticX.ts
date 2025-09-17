@@ -1,3 +1,9 @@
+/**
+ * @see https://en.wikipedia.org/wiki/Internal_ballistics
+ * @see https://apps.dtic.mil/sti/tr/pdf/ADA145890.pdf
+ */
+
+
 
 /**
  * Gravity in feet per second squared
@@ -43,7 +49,7 @@ export interface CompUnit {
 /**
  * Return value for a PBR optimization results
  */
- export interface PointBlankRangeResult {
+ export interface MaximumPointBlankRangeResult {
     near_zero: number;
     far_zero: number;
     min_pbr: number;

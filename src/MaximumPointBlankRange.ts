@@ -1,30 +1,35 @@
 import { AngleUnits, convert, MeasureUnits } from "./util/MeasurmentUnit.js";
-import type { PointBlankRangeResult } from "./BalisticX.js";
+import type { MaximumPointBlankRangeResult } from "./BalisticX.js";
 import { DragFunction, GRAVITY } from "./BalisticX.js";
 import { Retard } from "./Retard.js";
 import logger from "./util/Logger.js";
 
 
-     class PointBlankRange {
-        /**
-         * Solves for the maximum Point Blank Range (PBR) and associated details
+    /**
+     * @see https://www.ronspomeroutdoors.com/blog/understanding-mpbr-for-better-shooting
+     * @see https://shooterscalculator.com/point-blank-range.php
+     */
+
+
+            /**
+         * Solves for the maximum Point Blank Range (MPBR)
          *
          * @param Drag The drag function you wish to use for the solution (G1, G2, G3, etc.)
          * @param DragCoefficient The coefficient of drag for the projectile you wish to model.
-         * @param Vi The projectile initial velocity.
+         * @param InitialVelocity The projectile initial velocity.
          * @param SightHeight The height of the sighting system above the bore centerline.
          * @param VitalSize Size in inches of the target at which the point of impact must remain in.
          *
          * @return A PbrResult object containing our five results.
          */
-        public static pbr(
+        export function calculateMPBR(
             Drag: DragFunction,
             DragCoefficient: number,
-            Vi: number,
+            InitialVelocity: number,
             SightHeight: number,
             VitalSize: number
-        ): PointBlankRangeResult {
-            const result: PointBlankRangeResult = {
+        ): MaximumPointBlankRangeResult {
+            const result: MaximumPointBlankRangeResult = {
                 near_zero: 0,
                 far_zero: 0,
                 min_pbr: 0,
@@ -33,7 +38,7 @@ import logger from "./util/Logger.js";
             };
 
             let t = 0;
-            let dt = 0.5 / Vi;
+            let dt = 0.5 / InitialVelocity;
             let v = 0;
             let vx: number, vx1: number, vy: number, vy1: number;
             let dv = 0, dvx = 0, dvy = 0;
@@ -66,8 +71,8 @@ import logger from "./util/Logger.js";
                 Gy = GRAVITY * Math.cos(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ShootingAngle + ZAngle));
                 Gx = GRAVITY * Math.sin(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ShootingAngle + ZAngle));
 
-                vx = Vi * Math.cos(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ZAngle));
-                vy = Vi * Math.sin(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ZAngle));
+                vx = InitialVelocity * Math.cos(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ZAngle));
+                vy = InitialVelocity * Math.sin(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ZAngle));
 
                 x = 0;
                 y = -SightHeight / 12.0;
@@ -171,4 +176,3 @@ import logger from "./util/Logger.js";
 
             return result;
         }
-    }

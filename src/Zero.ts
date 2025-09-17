@@ -1,5 +1,6 @@
 import { DragFunction, GRAVITY } from "./BalisticX.js";
 import { Retard } from "./Retard.js";
+import { AngleUnits, convert, MeasureUnits } from "./util/MeasurmentUnit.js";
 
      export class Zero {
         /**
@@ -29,7 +30,7 @@ import { Retard } from "./Retard.js";
             let dt = 1 / Vi;
             let y = -SightHeight / 12;
             let x = 0;
-            let da = Angle.DegreeToRadian(14);
+            let da = convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, 14);
 
             // State variables for each integration
             let v = 0, vx = 0, vy = 0;
@@ -82,17 +83,18 @@ import { Retard } from "./Retard.js";
                 }
 
                 // If our accuracy is sufficient, we can stop approximating
-                if (Math.abs(da) < Angle.MOAToRadian(0.01)) {
+                if (Math.abs(da) < convert(MeasureUnits.ANGLE, AngleUnits.MOA, AngleUnits.RADIAN, 0.01)) {
                     quit = true;
                 }
 
                 // If we exceed the 45 degree launch angle, then the projectile just won't get there
-                if (angle > Angle.DegreeToRadian(45)) {
+                
+                if (angle > convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, 45)) {
                     quit = true;
                 }
             }
 
             // Convert to degrees for return value.
-            return Angle.RadianToDegree(angle);
+            return convert(MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.DEGREE, angle);
         }
     }

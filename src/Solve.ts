@@ -1,10 +1,10 @@
 
-
-import type { BallisticComputationUnit } from "./BallisticX.js";
 import { DragFunction, GRAVITY, BALLISTIC_COMPENSATION_MAX_RANGE } from "./BallisticX.js";
-import { Windage } from "./Windage.js";
+import { calculateRetard } from "./Retard.js";
+import type { BallisticComputationUnit } from "./types/BallisticComputationUnit.js";
 import logger from "./util/Logger.js";
 import { convert, MeasureUnits, AngleUnits } from "./util/MeasurementUnit.js";
+import { headWind, crossWind, calculateWindage } from "./Windage.js";
 
 
 /**
@@ -41,8 +41,8 @@ export function solveAll(
     let dv = 0, dvx = 0, dvy = 0;
     let x = 0, y = 0;
 
-    const headwind = Windage.HeadWind(windSpeed, windAngle);
-    const crosswind = Windage.CrossWind(windSpeed, windAngle);
+    const headwind = headWind(windSpeed, windAngle);
+    const crosswind = crossWind(windSpeed, windAngle);
 
     const Gy = GRAVITY * Math.cos(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, shootingAngle + zeroAngle));
     const Gx = GRAVITY * Math.sin(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, shootingAngle + zeroAngle));
@@ -67,7 +67,7 @@ export function solveAll(
         dt = 0.5 / v;
 
         // Compute acceleration using the drag function retardation
-        dv = Retard.CalcRetard(drag, dragCoefficient, v + headwind * 5280.0 / 3600.0);
+        dv = calculateRetard(drag, dragCoefficient, v + headwind * 5280.0 / 3600.0);
         dvx = -(vx / v) * dv;
         dvy = -(vy / v) * dv;
 
@@ -76,13 +76,13 @@ export function solveAll(
         vy += dt * dvy + dt * Gy;
 
         if (x / 3 >= n) {
-            const wind_tmp = Windage.CalcWindage(crosswind, initialVelocity, x, t + dt);
+            const wind_tmp = calculateWindage(crosswind, initialVelocity, x, t + dt);
             const unit: BallisticComputationUnit = {
                 range: x / 3,
                 drop: y * 12,
                 correction: - convert(MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.MOA, Math.atan(y / x)),
                 time: t + dt,
-                windageIn: wind_tmp,
+                windageInches: wind_tmp,
                 windageMOA: convert(MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.MOA, Math.atan(wind_tmp / (12 * x))),
                 velocityCompensated: v,
                 horizontalVelocity: vx,

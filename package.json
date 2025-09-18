@@ -2,18 +2,26 @@
   "name": "ballisticx",
   "version": "1.0.0",
   "description": "External Ballistics library",
-  "main": "index.js",
+  "main": "index.ts",
   "type": "module",
   "directories": {
-    "test": "test"
+    "src": "./src"
   },
+  "exports": {
+        ".": {
+          "import": "./src/**/*.ts",
+          "require": "./src/**/*.ts",
+          "types": "./src/**/*.d.ts"
+        }
+      },
   "scripts": {
     "test": "vitest",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\"",
     "lint:fix": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "clean": "rm -rf ./dist",
     "build": "tsc",
-    "prepack": "npm run clean && npm run build"
+    "prepack": "npm run clean && npm run build",
+    "docs": "typedoc --tsconfig tsconfig.json"
   },
   "repository": {
     "type": "git",
@@ -34,10 +42,12 @@
     "@eslint/js": "^9.35.0",
     "@eslint/json": "^0.13.2",
     "@eslint/markdown": "^7.2.0",
+    "@types/node": "^24.5.2",
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
     "eslint": "^9.35.0",
     "globals": "^16.4.0",
+    "typedoc": "^0.28.13",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.0",
     "vitest": "^3.2.4"

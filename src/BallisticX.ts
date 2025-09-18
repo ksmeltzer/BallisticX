@@ -20,12 +20,12 @@ export const STANDARD_PRESSURE: number = 29.92;
 
 /**
  * @constant
- * @name STANDARD_TEMPATURE
+ * @name STANDARD_TEMPERATURE
  * @type {number}
  * @default 59.0
  * @description Standard Temperature in degrees Fahrenheit, per: the US Ordnance Department as an average value over a wide range of altitudes
  */
-export const STANDARD_TEMPATURE: number = 59.0;
+export const STANDARD_TEMPERATURE: number = 59.0;
 
 
 /**
@@ -33,7 +33,7 @@ export const STANDARD_TEMPATURE: number = 59.0;
  * @name BALLISTIC_COMPENSATION_MAX_RANGE
  * @type {number}
  * @default 50001
- * @description All good thigs have to come to an end, so this is a cutoff to the max range in yards that the system will calculate to. I saw it in another library and figured it is far enough.
+ * @description All good thing's have to come to an end, so this is a cutoff to the max range in yards that the system will calculate to. I saw it in another library and figured it is far enough.
  */
 export const BALLISTIC_COMPENSATION_MAX_RANGE: number = 50001;
 
@@ -41,7 +41,7 @@ export const BALLISTIC_COMPENSATION_MAX_RANGE: number = 50001;
 /**
  * @enum {number}
  * @name PropellentGasVelocity
- * @description enum for standard propellents and their associated average velocities.
+ * @description enum for standard propellent and their associated average velocities.
  */
 export enum PropellentGasVelocity {
     HIGH_POWER_RIFLE = 1.75,
@@ -67,4 +67,16 @@ export enum DragFunction {
     G8 = "G8",
     I = "Ingalls",
     B = "British"
+}
+
+/**
+ * @enum {number}
+ * @name BulletSpecificGravity
+ * @description Common values for the specific gravity of bullet materials.
+ */
+export enum BulletSpecificGravity {
+    LEAD = 11.3,
+    COPPER = 8.9,
+    BRASS = 8.5,
+    STEEL = 7.8
 }

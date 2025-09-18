@@ -1,16 +1,16 @@
 
 import { assert, describe, test } from "vitest";
-import { PropellentGasVelocity } from "../BalisticX.js";
+import { PropellentGasVelocity } from "../BallisticX.js";
 import { calculateFreeRecoil } from "../FreeRecoil.js";
 
 describe('Free Recoil Tests', () => {
     test('Calculate Free Recoil', () => {
         const val = calculateFreeRecoil(
-            589.9, // EjectaWeight
-            1275,  // EjectaVelocity
-            33.4,  // PropellentWeight
-            PropellentGasVelocity.SHOTGUN, // PropellentGasVelocity
-            7      // FirearmWeight
+            589.9, 
+            1275,  
+            33.4,  
+            PropellentGasVelocity.SHOTGUN, 
+            7
         );
         assert.strictEqual(val, -25.643819337020314);
     });

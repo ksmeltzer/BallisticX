@@ -210,6 +210,8 @@ Project Link: [https://github.com/ksmeltzer/BallisticX](https://github.com/ksmel
 
 * [Wikipedia Internal Ballistics](https://en.wikipedia.org/wiki/Internal_ballistics)
 * [Propellant Gas Flow During Shot Ejection](https://apps.dtic.mil/sti/tr/pdf/ADA145890.pdf)
+* [Wikipedia Rifling](https://en.wikipedia.org/wiki/Rifling)
+
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

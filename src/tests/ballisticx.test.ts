@@ -1,9 +1,9 @@
 
 
 import { describe, test, assert } from "vitest";
-import  { DragFunction } from "../BalisticX.js";
-import  { Windage } from "../Windage.js";
-import  { zeroAngle } from "../Zero.js";
+import { DragFunction } from "../BallisticX.js";
+import { calculateWindage, crossWind, headWind } from "../Windage.js";
+import { zeroAngle } from "../Zero.js";
 import { calculateRetard } from "../Retard.js";
 
 describe('ballisticx Tests', () => {
@@ -47,18 +47,18 @@ describe('ballisticx Tests', () => {
         assert.strictEqual(B, 1721.5850610419966);
     });
 
-    test('Calculate Windate', () => {
-        const val = Windage.CalcWindage(2.0, 1200, 100, 3);
+    test('Calculate Windage', () => {
+        const val = calculateWindage(2.0, 1200, 100, 3);
         assert.strictEqual(val, 102.66666666666667);
     });
 
     test('Calculate Head Wind', () => {
-        const val = Windage.HeadWind(2.0, 0);
+        const val = headWind(2.0, 0);
         assert.strictEqual(val, 2);
     });
 
     test('Calculate Cross Wind', () => {
-        const val = Windage.CrossWind(2.0, 0);
+        const val = crossWind(2.0, 0);
         assert.strictEqual(val, 0);
     });
 });

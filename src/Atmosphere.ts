@@ -1,6 +1,6 @@
-import { convert, MeasureUnits, TempatureUnits } from "./util/MeasurmentUnit.js";
+import { convert, MeasureUnits, TemperatureUnits } from "./util/MeasurementUnit.js";
 import logger from "./util/Logger.js";
-import { STANDARD_PRESSURE, STANDARD_TEMPATURE } from "./BalisticX.js";
+import { STANDARD_PRESSURE, STANDARD_TEMPERATURE } from "./BallisticX.js"
 
 /**
  * @function
@@ -25,14 +25,14 @@ export function calculateRefraction(temperature: number, pressure: number, relat
 /**
  * 
 * @function
- * @name calculateStandrdizedPressure
- * @description standerdized pressure calculation
+ * @name calculateStandardizedPressure
+ * @description standardized pressure calculation
  * 
  * @param {number} pressure
  *
  * @return {number} the pressure standardized pressure for atmospherics
  */
-export function calculateStandrdizedPressure(pressure: number): number {
+export function calculateStandardizedPressure(pressure: number): number {
     const FP = (pressure - STANDARD_PRESSURE) / STANDARD_PRESSURE;
 
     logger.debug(`Standardized Pressure: ${FP}`);
@@ -42,21 +42,21 @@ export function calculateStandrdizedPressure(pressure: number): number {
 
 /**
  * @function
- * @name calculateStanderdizedTemperature
+ * @name calculateStandardizedTemperature
  * @description Standard temperature at altitude using lapse rate
  * 
- * @param {number} tempature the current tempature
+ * @param {number} temperature the current temperature
  * @param {number} altitude the current altitude
  *
- * @return {number} the standardized tempature adjusted via lapse rate.
+ * @return {number} the standardized temperature adjusted via lapse rate.
  * 
  * @see http://en.wikipedia.org/wiki/Lapse_rate
  */
-export function calculateStanderdizedTemperature(tempature: number, altitude: number): number {
-    const Tstd = -0.0036 * altitude + STANDARD_TEMPATURE;
+export function calculateStandardizedTemperature(temperature: number, altitude: number): number {
+    const tstd = -0.0036 * altitude + STANDARD_TEMPERATURE;
 
     // Divide by "standard temp" above converted to Rankine
-    const FT = (tempature - Tstd) / convert(MeasureUnits.TEMPATURE, TempatureUnits.FAHRENHEIT, TempatureUnits.RANKINE, Tstd);
+    const FT = (temperature - tstd) / convert(MeasureUnits.TEMPERATURE, TemperatureUnits.FAHRENHEIT, TemperatureUnits.RANKINE, tstd);
 
     logger.debug(`Standardized Temperature: ${FT}`);
     return FT;
@@ -82,7 +82,6 @@ export function calculateStandardizedAltitude(altitude: number): number {
 }
 
 
-
 /**
  * @function
  * @name correctDragCoefficient
@@ -105,12 +104,12 @@ export function correctDragCoefficient(
     relativeHumidity: number
 ): number {
     const fAltitude = calculateStandardizedAltitude(altitude);
-    const fTempature = calculateStanderdizedTemperature(temperature, altitude);
+    const fTemperature = calculateStandardizedTemperature(temperature, altitude);
     const fRefraction = calculateRefraction(temperature, barometer, relativeHumidity);
-    const fPressure = calculateStandrdizedPressure(barometer);
+    const fPressure = calculateStandardizedPressure(barometer);
 
     // Calculate the atmospheric correction factor
-    const correctedDrag = fAltitude * (1 + fTempature - fPressure) * fRefraction;
+    const correctedDrag = fAltitude * (1 + fTemperature - fPressure) * fRefraction;
 
     logger.debug(`Calculated Atmospheric Correction Factor: ${correctedDrag}`);
     logger.debug(`Atmospheric Correction Factor * Drag: ${dragCoefficient * correctedDrag}`);

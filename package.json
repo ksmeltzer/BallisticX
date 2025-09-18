@@ -1,7 +1,7 @@
 {
-  "name": "balisticx",
+  "name": "ballisticx",
   "version": "1.0.0",
-  "description": "Extenal Balistics library",
+  "description": "External Ballistics library",
   "main": "index.js",
   "type": "module",
   "directories": {
@@ -9,6 +9,8 @@
   },
   "scripts": {
     "test": "vitest",
+    "lint": "eslint \"{src,apps,libs}/**/*.ts\"",
+    "lint:fix": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "clean": "rm -rf ./dist",
     "build": "tsc",
     "prepack": "npm run clean && npm run build"
@@ -18,7 +20,7 @@
     "url": " "
   },
   "keywords": [
-    "balistics library"
+    "ballistics library"
   ],
   "author": "Kenton Smeltzer",
   "license": "Apache-2.0",
@@ -29,7 +31,15 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@eslint/json": "^0.13.2",
+    "@eslint/markdown": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "eslint": "^9.35.0",
+    "globals": "^16.4.0",
     "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.0",
     "vitest": "^3.2.4"
   }
 }

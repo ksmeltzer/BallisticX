@@ -1,178 +1,175 @@
-import { AngleUnits, convert, MeasureUnits } from "./util/MeasurmentUnit.js";
-import type { PointBlankRangeResult } from "./BalisticX.js";
-import { DragFunction, GRAVITY } from "./BalisticX.js";
-import { Retard } from "./Retard.js";
+import { AngleUnits, convert, MeasureUnits } from "./util/MeasurementUnit.js";
+import { DragFunction, GRAVITY } from "./BallisticX.js";
 import logger from "./util/Logger.js";
+import type { PointBlankRangeResult } from "./types/PointBlankRangeResult.js";
+import { calculateRetard } from "./Retard.js";
 
+/**
+ * @function
+ * @name calculatePointBlankRange
+ * @description Solves for the corrected Point Blank Range values
+ * 
+ * @param {DragFunction} drag The drag function you wish to use for the solution (G1, G2, G3, etc.)
+ * @param {number} dragCoefficient The coefficient of drag for the projectile you wish to model.
+ * @param {number} initialVelocity The projectile initial velocity.
+ * @param {number} sightHeight The height of the sighting system above the bore centerline.
+ * @param {number} vitalSize Size in inches of the target at which the point of impact must remain in.
+ *
+ * @returns {PointBlankRangeResult}  A Point blank range result object containing our five results.
+ * 
+ * @see https://www.ronspomeroutdoors.com/blog/understanding-mpbr-for-better-shooting
+ * @see https://shooterscalculator.com/point-blank-range.php
+ */
+export function calculatePointBlankRange(
+    drag: DragFunction,
+    dragCoefficient: number,
+    initialVelocity: number,
+    sightHeight: number,
+    vitalSize: number
+): PointBlankRangeResult {
+    const result: PointBlankRangeResult = {
+        nearZero: 0,
+        farZero: 0,
+        minPointBlankRange: 0,
+        maxPointBlankRange: 0,
+        sightInHeight: 0
+    };
 
-    /**
-     * @see https://www.ronspomeroutdoors.com/blog/understanding-mpbr-for-better-shooting
-     * @see https://shooterscalculator.com/point-blank-range.php
-     */
+    let t = 0;
+    let dt = 0.5 / initialVelocity;
+    let v = 0;
+    let vx: number, vx1: number, vy: number, vy1: number;
+    let dv = 0, dvx = 0, dvy = 0;
+    let x: number, y: number;
+    let ShootingAngle = 0;
+    let ZAngle = 0;
+    let Step = 10;
 
+    let quit = false;
 
-            /**
-         * Solves for the maximum Point Blank Range (MPBR)
-         *
-         * @param Drag The drag function you wish to use for the solution (G1, G2, G3, etc.)
-         * @param DragCoefficient The coefficient of drag for the projectile you wish to model.
-         * @param InitialVelocity The projectile initial velocity.
-         * @param SightHeight The height of the sighting system above the bore centerline.
-         * @param VitalSize Size in inches of the target at which the point of impact must remain in.
-         *
-         * @return A PbrResult object containing our five results.
-         */
-        export function calculateMPBR(
-            Drag: DragFunction,
-            DragCoefficient: number,
-            InitialVelocity: number,
-            SightHeight: number,
-            VitalSize: number
-        ): PointBlankRangeResult {
-            const result: PointBlankRangeResult = {
-                nearZero: 0,
-                farZero: 0,
-                minPointBlankRange: 0,
-                maxPointBlankRange: 0,
-                sightInHeight: 0
-            };
+    let vertex_keep = false;
+    let yVertex = 0;
+    let xVertex = 0;
 
-            let t = 0;
-            let dt = 0.5 / InitialVelocity;
-            let v = 0;
-            let vx: number, vx1: number, vy: number, vy1: number;
-            let dv = 0, dvx = 0, dvy = 0;
-            let x: number, y: number;
-            let ShootingAngle = 0;
-            let ZAngle = 0;
-            let Step = 10;
+    let minPbrRange = 0;
+    let minPbrKeep = false;
 
-            let quit = false;
+    let maxPbrRange = 0;
+    let maxPbrKeep = false;
 
-            let vertex_keep = false;
-            let y_vertex = 0;
-            let x_vertex = 0;
+    let tin100 = 0;
 
-            let min_pbr_range = 0;
-            let min_pbr_keep = false;
+    let zero = -1;
+    let fZero = 0;
+    let zeroKeep = false, farZeroKeep = false, tinKeep = false;
 
-            let max_pbr_range = 0;
-            let max_pbr_keep = false;
+    let Gx: number, Gy: number;
 
-            let tin100 = 0;
+    while (!quit) {
+        Gy = GRAVITY * Math.cos(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ShootingAngle + ZAngle));
+        Gx = GRAVITY * Math.sin(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ShootingAngle + ZAngle));
 
-            let zero = -1;
-            let farzero = 0;
-            let zero_keep = false, farzero_keep = false, tinkeep = false;
+        vx = initialVelocity * Math.cos(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ZAngle));
+        vy = initialVelocity * Math.sin(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ZAngle));
 
-            let Gx: number, Gy: number;
+        x = 0;
+        y = -sightHeight / 12.0;
 
-            while (!quit) {
-                Gy = GRAVITY * Math.cos(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ShootingAngle + ZAngle));
-                Gx = GRAVITY * Math.sin(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ShootingAngle + ZAngle));
+        minPbrKeep = false;
+        maxPbrKeep = false;
+        vertex_keep = false;
 
-                vx = InitialVelocity * Math.cos(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ZAngle));
-                vy = InitialVelocity * Math.sin(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, ZAngle));
+        tin100 = 0;
+        tinKeep = false;
+        zeroKeep = false;
+        farZeroKeep = false;
 
-                x = 0;
-                y = -SightHeight / 12.0;
+        for (t = 0; ; t = t + dt) {
+            vx1 = vx;
+            vy1 = vy;
+            v = Math.sqrt(vx * vx + vy * vy);
+            dt = 0.5 / v;
 
-                min_pbr_keep = false;
-                max_pbr_keep = false;
-                vertex_keep = false;
+            // Compute acceleration using the drag function retardation
+            dv = calculateRetard(drag, dragCoefficient, v);
+            dvx = -(vx / v) * dv;
+            dvy = -(vy / v) * dv;
 
-                tin100 = 0;
-                tinkeep = false;
-                zero_keep = false;
-                farzero_keep = false;
+            // Compute velocity, including the resolved gravity vectors
+            vx += dt * dvx + dt * Gx;
+            vy += dt * dvy + dt * Gy;
 
-                for (t = 0; ; t = t + dt) {
-                    vx1 = vx;
-                    vy1 = vy;
-                    v = Math.sqrt(vx * vx + vy * vy);
-                    dt = 0.5 / v;
+            // Compute position based on average velocity
+            x += dt * (vx + vx1) / 2.0;
+            y += dt * (vy + vy1) / 2.0;
 
-                    // Compute acceleration using the drag function retardation
-                    dv = Retard.CalcRetard(Drag, DragCoefficient, v);
-                    dvx = -(vx / v) * dv;
-                    dvy = -(vy / v) * dv;
-
-                    // Compute velocity, including the resolved gravity vectors
-                    vx += dt * dvx + dt * Gx;
-                    vy += dt * dvy + dt * Gy;
-
-                    // Compute position based on average velocity
-                    x += dt * (vx + vx1) / 2.0;
-                    y += dt * (vy + vy1) / 2.0;
-
-                    if ((y > 0) && !zero_keep && (vy >= 0)) {
-                        zero = x;
-                        zero_keep = true;
-                    }
-
-                    if ((y < 0) && !farzero_keep && (vy <= 0)) {
-                        farzero = x;
-                        farzero_keep = true;
-                    }
-
-                    if ((12 * y > -(VitalSize / 2)) && !min_pbr_keep) {
-                        min_pbr_range = x;
-                        min_pbr_keep = true;
-                    }
-
-                    if ((12 * y < -(VitalSize / 2)) && min_pbr_keep && !max_pbr_keep) {
-                        max_pbr_range = x;
-                        max_pbr_keep = true;
-                    }
-
-                    if ((x >= 300) && !tinkeep) {
-                        tin100 = 100.0 * y * 12.0;
-                        tinkeep = true;
-                    }
-
-                    if (Math.abs(vy) > Math.abs(3 * vx)) {
-                        // FIXME this should produce an error
-                        break;
-                    }
-
-                    // The PBR will be maximum at the point where the vertex is 1/2 vital zone size
-                    if ((vy < 0) && !vertex_keep) {
-                        y_vertex = y;
-                        x_vertex = x;
-                        vertex_keep = true;
-                    }
-
-                    if (zero_keep && farzero_keep && min_pbr_keep && max_pbr_keep && vertex_keep && tinkeep) {
-                        break;
-                    }
-                }
-
-                logger.debug(`y_vertex ${y_vertex}`);
-                if ((y_vertex * 12) > (VitalSize / 2.0)) {
-                    // Vertex too high. Go downwards.
-                    if (Step > 0) {
-                        Step = -Step / 2.0;
-                    }
-                } else if ((y_vertex * 12) <= (VitalSize / 2.0)) {
-                    // Vertex too low. Go upwards.
-                    if (Step < 0) {
-                        Step = -Step / 2.0;
-                    }
-                }
-
-                ZAngle += Step;
-
-                if (Math.abs(Step) < (0.01 / 60)) {
-                    quit = true;
-                }
+            if ((y > 0) && !zeroKeep && (vy >= 0)) {
+                zero = x;
+                zeroKeep = true;
             }
 
-            result.nearZero = zero / 3;
-            result.farZero = farzero / 3;
-            result.minPointBlankRange = min_pbr_range / 3;
-            result.maxPointBlankRange = max_pbr_range / 3;
-            // At 100 yards (in 100ths of an inch)
-            result.sightInHeight = tin100 / 100;
+            if ((y < 0) && !farZeroKeep && (vy <= 0)) {
+                fZero = x;
+                farZeroKeep = true;
+            }
 
-            return result;
+            if ((12 * y > -(vitalSize / 2)) && !minPbrKeep) {
+                minPbrRange = x;
+                minPbrKeep = true;
+            }
+
+            if ((12 * y < -(vitalSize / 2)) && minPbrKeep && !maxPbrKeep) {
+                maxPbrRange = x;
+                maxPbrKeep = true;
+            }
+
+            if ((x >= 300) && !tinKeep) {
+                tin100 = 100.0 * y * 12.0;
+                tinKeep = true;
+            }
+
+            if (Math.abs(vy) > Math.abs(3 * vx)) {
+                throw new Error("Velocity is wacky");
+            }
+
+            // The PBR will be maximum at the point where the vertex is 1/2 vital zone size
+            if ((vy < 0) && !vertex_keep) {
+                yVertex = y;
+                xVertex = x;
+                vertex_keep = true;
+            }
+
+            if (zeroKeep && farZeroKeep && minPbrKeep && maxPbrKeep && vertex_keep && tinKeep) {
+                break;
+            }
         }
+
+        logger.debug(`yVertex ${yVertex}`);
+        if ((yVertex * 12) > (vitalSize / 2.0)) {
+            // Vertex too high. Go downwards.
+            if (Step > 0) {
+                Step = -Step / 2.0;
+            }
+        } else if ((yVertex * 12) <= (vitalSize / 2.0)) {
+            // Vertex too low. Go upwards.
+            if (Step < 0) {
+                Step = -Step / 2.0;
+            }
+        }
+
+        ZAngle += Step;
+
+        if (Math.abs(Step) < (0.01 / 60)) {
+            quit = true;
+        }
+    }
+
+    result.nearZero = zero / 3;
+    result.farZero = fZero / 3;
+    result.minPointBlankRange = minPbrRange / 3;
+    result.maxPointBlankRange = maxPbrRange / 3;
+    // At 100 yards (in 100ths of an inch)
+    result.sightInHeight = tin100 / 100;
+
+    return result;
+}

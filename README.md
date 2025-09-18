@@ -39,7 +39,7 @@
   <p align="center">
     A comprehensive TypeScript library that provides common, internal, external and terminal ballistics calculations and functionality!
     <br />
-    <a href=""><strong>Explore the docs »</strong></a>
+    <a href="https://raw.githack.com/ksmeltzer/BallisticX/main/docs/index.html"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="">View Demo</a>

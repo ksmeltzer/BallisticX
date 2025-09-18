@@ -8,11 +8,7 @@
     "src": "./src"
   },
   "exports": {
-        ".": {
-          "import": "./src/**/*.ts",
-          "require": "./src/**/*.ts",
-          "types": "./src/**/*.d.ts"
-        }
+        ".": "./dist/index.js"
       },
   "scripts": {
     "test": "vitest",

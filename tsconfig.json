@@ -39,8 +39,6 @@
   },
   "tsdoc": {
     "destination": "docs",
-    "systemName": "BallisticX",
-    "entryPointStrategy": "expand",
-    "entryPoints": ["./src"]
+    "systemName": "BallisticX"
   }
 }

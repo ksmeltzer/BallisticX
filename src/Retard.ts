@@ -3,28 +3,25 @@
 import { DragFunction } from "./BalisticX.js";
 import logger from "./util/Logger.js";
 
-// This was originally part of the GNU Exterior Ballistics Computer.
-
-     export class Retard {
         /**
-         * Calculate ballistic retardation values based on standard drag functions.
-         *
-         * @param drag_func DragFunction enum value (G1, G2, G3, etc.)
-         * @param DragCoefficient The coefficient of drag for the projectile for the given drag function.
-         * @param Velocity The velocity of the projectile.
-         * @return The projectile drag retardation velocity, in ft/s per second.
+         * @function calculateRetard ballistic retardation values based on standard drag functions.
+         * @description calculates ballistic retardation values based on standard drag functions
+         * @param dragFunction @type DragFunction, enum value (G1, G2, G3, etc.)
+         * @param dragCoefficient @type number, The coefficient of drag for the projectile for the given drag function.
+         * @param velocity @type number, The velocity of the projectile.
+         * @returns @type number, The projectile drag retardation velocity, in ft/s per second
          */
-        public static CalcRetard(
-            drag_func: DragFunction,
-            DragCoefficient: number,
-            Velocity: number
+        export function calculateRetard(
+            dragFunction: DragFunction,
+            dragCoefficient: number,
+            velocity: number
         ): number {
-            const vp = Velocity;
+            const vp = velocity;
             let val = -1;
             let A = -1;
             let M = -1;
 
-            switch (drag_func) { 
+            switch (dragFunction) { 
                 //TODO: This is hacky kenton you can do better than this and make it much cleaner
                 // move all of these values into an ordered set and do a lookup. I know you where 
                 //just getting it done while learning ballistics, but do better. Switches and If's
@@ -152,11 +149,10 @@ import logger from "./util/Logger.js";
             logger.debug(`M: ${M}`);
             logger.debug(`vp: ${vp}`);
             if (A !== -1 && M !== -1 && vp > 0 && vp < 10000) {
-                val = A * Math.pow(vp, M) / DragCoefficient;
+                val = A * Math.pow(vp, M) / dragCoefficient;
                 logger.debug(`val: ${val}`);
                 return val;
             } else {
                 return -1;
             }
         }
-    }

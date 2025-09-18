@@ -1,120 +1,70 @@
 /**
- * @see https://en.wikipedia.org/wiki/Internal_ballistics
- * @see https://apps.dtic.mil/sti/tr/pdf/ADA145890.pdf
+ * @constant
+ * @name GRAVITY
+ * @type {number}
+ * @default -32.1609
+ * @description Gravity in feet per second squared, per: Wolfram Alpha
  */
-
+export const GRAVITY: number = -32.1609;
 
 
 /**
- * Gravity in feet per second squared
- * Value according to Wolfram Alpha
+ * @constant {number} 
+ * @name STANDARD_PRESSURE
+ * @type {number}
+ * @default 29.92
+ * @description Standard Atmospheric Pressure in inches mercury, per: Wolfram Alpha
  */
-export const GRAVITY = -32.1609;
+export const STANDARD_PRESSURE: number = 29.92;
+
 
 /**
- * Standard Atmospheric Pressure in inches mercury
- * Value according to Wolfram Alpha
+ * @constant
+ * @name STANDARD_TEMPATURE
+ * @type {number}
+ * @default 59.0
+ * @description Standard Temperature in degrees Fahrenheit, per: the US Ordnance Department as an average value over a wide range of altitudes
  */
-export const STANDARD_PRESSURE = 29.92;
+export const STANDARD_TEMPATURE: number = 59.0;
+
 
 /**
- * Standard Temperature in degrees Fahrenheit
- * This value was determined by the US Ordnance Department as an
- * average value over a wide range of altitudes
+ * @constant
+ * @name BALLISTIC_COMPENSATION_MAX_RANGE
+ * @type {number}
+ * @default 50001
+ * @description All good thigs have to come to an end, so this is a cutoff to the max range in yards that the system will calculate to. I saw it in another library and figured it is far enough.
  */
-export const STANDARD_TEMP = 59.0;
+export const BALLISTIC_COMPENSATION_MAX_RANGE: number = 50001;
+
 
 /**
- * Arbitrary constant used to denote the max range
- * of calculations
+ * @enum {number}
+ * @name PropellentGasVelocity
+ * @description enum for standard propellents and their associated average velocities.
  */
-export const BCOMP_MAX_RANGE = 50001;
-
-/**
- * When computing a ballistics solution this holds
- * all the values from each computation interval.
- */
-export interface CompUnit {
-    range: number;
-    drop: number;
-    correction: number;
-    time: number;
-    windage_in: number;
-    windage_moa: number;
-    velocity_com: number;
-    horizontal_velocity: number;
-    vertical_velocity: number;
+export enum PropellentGasVelocity {
+    HIGH_POWER_RIFLE = 1.75,
+    SHOTGUN = 1.50,
+    SHOTGUN_LONG = 1.25,
+    HANDGUN = 1.50
 }
 
-/**
- * Return value for a PBR optimization results
- */
- export interface MaximumPointBlankRangeResult {
-    near_zero: number;
-    far_zero: number;
-    min_pbr: number;
-    max_pbr: number;
-    sight_in_height: number;
-}
 
 /**
- * PropellentGasVelocity enum and helpers
+ * @enum {string}
+ * @name DragFunction
+ * @description drag function names.
  */
- export enum PropellentGasVelocity {
-    hpr = 1,
-    sal,
-    slb,
-    pr
-}
-
- function propellentGasVelocityToString(val: PropellentGasVelocity): string {
-    switch (val) {
-        case PropellentGasVelocity.hpr: return "High powered rifle";
-        case PropellentGasVelocity.sal: return "Shotgun - average length";
-        case PropellentGasVelocity.slb: return "Shotgun - long barrel";
-        case PropellentGasVelocity.pr: return "Pistol & revolers";
-        default: throw new Error("Invalid PropellentGasVelocity");
-    }
-}
-
- function propellentGasVelocityToDouble(val: PropellentGasVelocity): number {
-    switch (val) {
-        case PropellentGasVelocity.hpr: return 1.75;
-        case PropellentGasVelocity.sal: return 1.50;
-        case PropellentGasVelocity.slb: return 1.25;
-        case PropellentGasVelocity.pr: return 1.50;
-        default: throw new Error("Invalid PropellentGasVelocity");
-    }
-}
-
-/**
- * The different drag functions you are allowed to pick from
- */
- export enum DragFunction {
-    G1 = 1,
-    G2,
-    G3,
-    G4,
-    G5,
-    G6,
-    G7,
-    G8,
-    I,
-    B
-}
-
- function dragFunctionToString(val: DragFunction): string {
-    switch (val) {
-        case DragFunction.G1: return "G1";
-        case DragFunction.G2: return "G2";
-        case DragFunction.G3: return "G3";
-        case DragFunction.G4: return "G4";
-        case DragFunction.G5: return "G5";
-        case DragFunction.G6: return "G6";
-        case DragFunction.G7: return "G7";
-        case DragFunction.G8: return "G8";
-        case DragFunction.I: return "Ingalls";
-        case DragFunction.B: return "British";
-        default: throw new Error("Invalid DragFunction");
-    }
+export enum DragFunction {
+    G1 = "G1",
+    G2 = "G2",
+    G3 = "G3",
+    G4 = "G4",
+    G5 = "G5",
+    G6 = "G6",
+    G7 = "G7",
+    G8 = "G8",
+    I = "Ingalls",
+    B = "British"
 }

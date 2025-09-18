@@ -4,26 +4,28 @@ import { GRAVITY } from "./BalisticX.js";
 
 
         /**
-         * Calculate the free recoil energy of a firearm being fired.
+         * @function
+         * @name calculateFreeRecoil
+         * @description Calculate the free recoil energy of a firearm being fired.
          *
-         * @param EjectaWeight Weight in grains of the ejecta (bullet, wad, etc.).
-         * @param EjectaVelocity Velocity of the ejecta in feet per second.
-         * @param PropellentWeight Weight of propellent in grains.
-         * @param PropellentGasVelocity Velocity of propellent gases in feet per second.
-         * @param FirearmWeight Weight of firearm in pounds.
+         * @param {number} projectileWeight Weight in grains of the ejecta (bullet, wad, etc.).
+         * @param {number} projectileVelocity Velocity of the ejecta in feet per second.
+         * @param {number} propellentWeight Weight of propellent in grains.
+         * @param {number} propellentGasVelocity Velocity of propellent gases in feet per second.
+         * @param {number} firearmWeight Weight of firearm in pounds.
          *
-         * @return The free recoil energy in ft-lb.
+         * @return {number} The free recoil energy in ft-lb.
          */
         export function calculateFreeRecoil(
-            EjectaWeight: number,
-            EjectaVelocity: number,
-            PropellentWeight: number,
-            PropellentGasVelocity: number,
-            FirearmWeight: number
+            projectileWeight: number,
+            projectileVelocity: number,
+            propellentWeight: number,
+            propellentGasVelocity: number,
+            firearmWeight: number
         ): number {
-            const M = (FirearmWeight / (GRAVITY * 2));
+            const M = (firearmWeight / (GRAVITY * 2));
             
-            const V = (((EjectaWeight * EjectaVelocity) + (PropellentWeight * PropellentGasVelocity)) / convert(MeasureUnits.MASS, MassUnits.POUND, MassUnits.GRAIN, FirearmWeight));
+            const V = (((projectileWeight * projectileVelocity) + (propellentWeight * propellentGasVelocity)) / convert(MeasureUnits.MASS, MassUnits.POUND, MassUnits.GRAIN, firearmWeight));
 
             logger.debug(`M: ${M}`);
             logger.debug(`V: ${V}`);

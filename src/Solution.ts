@@ -1,11 +1,11 @@
 
-import type { CompUnit } from "./BalisticX.js";
+import type { BallisticComputationUnit } from "./BalisticX.js";
 
 // This was originally part of the GNU Exterior Ballistics Computer.
 
      export class Solution {
         private _df: number;
-        private _sln: Array<CompUnit>;
+        private _sln: Array<BallisticComputationUnit>;
         private _name: string;
         private _weight: number;
         private _bc: number;
@@ -46,7 +46,7 @@ import type { CompUnit } from "./BalisticX.js";
          * Full constructor
          */
         static full(
-            solution: Array<CompUnit>,
+            solution: Array<BallisticComputationUnit>,
             name: string,
             bc: number,
             sh: number,
@@ -82,7 +82,7 @@ import type { CompUnit } from "./BalisticX.js";
         }
 
         /** Getters for all properties */
-        public getSolution(): Array<CompUnit> {
+        public getSolution(): Array<BallisticComputationUnit> {
             return this._sln;
         }
 
@@ -143,11 +143,11 @@ import type { CompUnit } from "./BalisticX.js";
         }
 
         /** Helper to get CompUnit at position, with bounds check */
-        private getCompUnit(position: number): CompUnit {
+        private getCompUnit(position: number): BallisticComputationUnit {
             if (position >= this._sln.length) {
-                return this._sln[this._sln.length - 1] as CompUnit;
+                return this._sln[this._sln.length - 1] as BallisticComputationUnit;
             } else {
-                return this._sln[position] as CompUnit;
+                return this._sln[position] as BallisticComputationUnit;
             }
         }
 
@@ -168,23 +168,23 @@ import type { CompUnit } from "./BalisticX.js";
         }
 
         public getWindage(position: number): number {
-            return this.getCompUnit(position).windage_in;
+            return this.getCompUnit(position).windageIn;
         }
 
         public getWindageMOA(position: number): number {
-            return this.getCompUnit(position).windage_moa;
+            return this.getCompUnit(position).windageMOA;
         }
 
         public getVelocity(position: number): number {
-            return this.getCompUnit(position).velocity_com;
+            return this.getCompUnit(position).velocityCompensated;
         }
 
         public getVx(position: number): number {
-            return this.getCompUnit(position).vertical_velocity;
+            return this.getCompUnit(position).verticalVelocity;
         }
 
         public getVy(position: number): number {
-            return this.getCompUnit(position).horizontal_velocity;
+            return this.getCompUnit(position).horizontalVelocity;
         }
 
         /**

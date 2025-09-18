@@ -1,5 +1,5 @@
 import { AngleUnits, convert, MeasureUnits } from "./util/MeasurmentUnit.js";
-import type { MaximumPointBlankRangeResult } from "./BalisticX.js";
+import type { PointBlankRangeResult } from "./BalisticX.js";
 import { DragFunction, GRAVITY } from "./BalisticX.js";
 import { Retard } from "./Retard.js";
 import logger from "./util/Logger.js";
@@ -28,13 +28,13 @@ import logger from "./util/Logger.js";
             InitialVelocity: number,
             SightHeight: number,
             VitalSize: number
-        ): MaximumPointBlankRangeResult {
-            const result: MaximumPointBlankRangeResult = {
-                near_zero: 0,
-                far_zero: 0,
-                min_pbr: 0,
-                max_pbr: 0,
-                sight_in_height: 0
+        ): PointBlankRangeResult {
+            const result: PointBlankRangeResult = {
+                nearZero: 0,
+                farZero: 0,
+                minPointBlankRange: 0,
+                maxPointBlankRange: 0,
+                sightInHeight: 0
             };
 
             let t = 0;
@@ -167,12 +167,12 @@ import logger from "./util/Logger.js";
                 }
             }
 
-            result.near_zero = zero / 3;
-            result.far_zero = farzero / 3;
-            result.min_pbr = min_pbr_range / 3;
-            result.max_pbr = max_pbr_range / 3;
+            result.nearZero = zero / 3;
+            result.farZero = farzero / 3;
+            result.minPointBlankRange = min_pbr_range / 3;
+            result.maxPointBlankRange = max_pbr_range / 3;
             // At 100 yards (in 100ths of an inch)
-            result.sight_in_height = tin100 / 100;
+            result.sightInHeight = tin100 / 100;
 
             return result;
         }

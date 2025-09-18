@@ -3,51 +3,41 @@
  * @see https://en.wikipedia.org/wiki/Miller_twist_rule
  * @see https://www.vcalc.com/wiki/miller-twist-rule
  */
-     export class Miller {
-        public diameter: number = 1.0;
-        public length: number = 1.0;
-        public mass: number = 1.0;
-        public safeValue: number = 2;
 
 
-        /**
-         * Full constructor
+          /**
+         * @function calculateTwist 
          *
-         * @param diameter The bullet's diameter as a double
-         * @param length The bullet's length as a double
-         * @param mass The bullet's mass as a double
-         * @param safeValue The "safe value". Generally 2.
+         * @param diameter @type number @default 1.0 The bullet's diameter
+         * @param length @type @default 1.0 number The bullet's length
+         * @param mass @type number @default 1.0 The bullet's mass
+         * @param safeValue @type @default 2 number The "safe value". Generally 2.
+         * 
+         * @return @type number The calculated twist
          */
-        constructor(diameter: number, length: number, mass: number, safeValue: number) {
+        export function calculateTwist(diameter: number = 1.0, length: number = 1.0, mass: number = 1.0, safeValue: number = 2): number {
+            const temp1 = 30.0 * mass;
+            const temp2 = safeValue * Math.pow(diameter, 3) * length * (1.0 + Math.pow(length, 2));
 
-            this.diameter = diameter;
-            this.length = length;
-            this.mass = mass;
-            this.safeValue = safeValue;
-
+            return Math.sqrt(temp1 / temp2) * diameter;
         }
 
-        /**
-         * Calculate bullet twist rate
-         *
-         * @return The calculated twist as a double
-         */
-        public calculateTwist(): number {
-            const temp1 = 30.0 * this.mass;
-            const temp2 = this.safeValue * Math.pow(this.diameter, 3) * this.length * (1.0 + Math.pow(this.length, 2));
 
-            return Math.sqrt(temp1 / temp2) * this.diameter;
-        }
+ 
 
-        /**
-         * Calculate bullet stability
+         /**
+         * @function calculateStability 
          *
-         * @return The calculated stability as a double
+         * @param diameter @type number @default 1.0 The bullet's diameter
+         * @param length @type @default 1.0 number The bullet's length
+         * @param mass @type number @default 1.0 The bullet's mass
+         * @param safeValue @type @default 2 number The "safe value". Generally 2.
+         * 
+         * @return @type number The calculated stability
          */
-        public calculateStability(): number {
-            const temp1 = 30.0 * this.mass;
-            const temp2 = Math.pow(this.calculateTwist(), 2) * Math.pow(this.diameter, 3) * this.length * (1.0 + Math.pow(this.length, 2));
+        export function calculateStability(diameter: number = 1.0, length: number = 1.0, mass: number = 1.0, safeValue: number = 2): number {
+            const temp1 = 30.0 * mass;
+            const temp2 = Math.pow(calculateTwist(diameter, length, mass, safeValue), 2) * Math.pow(diameter, 3) * length * (1.0 + Math.pow(length, 2));
 
             return temp1 / temp2;
         }
-    }

@@ -9,9 +9,9 @@ describe('Free Recoil Tests', () => {
             589.9, // EjectaWeight
             1275,  // EjectaVelocity
             33.4,  // PropellentWeight
-            PropellentGasVelocity.sal, // PropellentGasVelocity
+            PropellentGasVelocity.SHOTGUN, // PropellentGasVelocity
             7      // FirearmWeight
         );
-        assert.strictEqual(val, -25.6449580558118);
+        assert.strictEqual(val, -25.643819337020314);
     });
 });

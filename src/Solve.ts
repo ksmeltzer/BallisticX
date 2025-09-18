@@ -1,13 +1,11 @@
 
 
-import type { CompUnit } from "./BalisticX.js";
-import { DragFunction, GRAVITY, BCOMP_MAX_RANGE } from "./BalisticX.js";
+import type { BallisticComputationUnit } from "./BalisticX.js";
+import { DragFunction, GRAVITY, BALLISTIC_COMPENSATION_MAX_RANGE } from "./BalisticX.js";
 import { Windage } from "./Windage.js";
-import { Retard } from "./Retard.js"
 import logger from "./util/Logger.js";
 import { convert, MeasureUnits, AngleUnits } from "./util/MeasurmentUnit.js";
 
-// This was originally part of the GNU Exterior Ballistics Computer.
 
      class Solve {
         /**
@@ -34,7 +32,7 @@ import { convert, MeasureUnits, AngleUnits } from "./util/MeasurmentUnit.js";
             WindSpeed: number,
             WindAngle: number,
             Zero: number
-        ): Array<CompUnit> {
+        ): Array<BallisticComputationUnit> {
             let t = 0;
             let dt = 0.5 / Vi;
             let v = 0;
@@ -59,7 +57,7 @@ import { convert, MeasureUnits, AngleUnits } from "./util/MeasurmentUnit.js";
             y = -SightHeight / 12;
             logger.debug(`y: ${y}`);
 
-            const solution: Array<CompUnit> = [];
+            const solution: Array<BallisticComputationUnit> = [];
             let n = 0;
             for (t = 0; ; t = t + dt) {
                 vx1 = vx;
@@ -78,16 +76,16 @@ import { convert, MeasureUnits, AngleUnits } from "./util/MeasurmentUnit.js";
 
                 if (x / 3 >= n) {
                     const wind_tmp = Windage.CalcWindage(crosswind, Vi, x, t + dt);
-                    const unit: CompUnit = {
+                    const unit: BallisticComputationUnit = {
                         range: x / 3,
                         drop: y * 12,
                         correction: - convert(MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.MOA, Math.atan(y / x)),
                         time: t + dt,
-                        windage_in: wind_tmp,
-                        windage_moa: convert(MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.MOA, Math.atan(wind_tmp / (12 * x))),
-                        velocity_com: v,
-                        horizontal_velocity: vx,
-                        vertical_velocity: vy
+                        windageIn: wind_tmp,
+                        windageMOA: convert(MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.MOA, Math.atan(wind_tmp / (12 * x))),
+                        velocityCompensated: v,
+                        horizontalVelocity: vx,
+                        verticalVelocity: vy
                     };
 
                     solution.push(unit);
@@ -104,7 +102,7 @@ import { convert, MeasureUnits, AngleUnits } from "./util/MeasurmentUnit.js";
                     break;
                 }
 
-                if (n >= BCOMP_MAX_RANGE + 1) {
+                if (n >= BALLISTIC_COMPENSATION_MAX_RANGE + 1) {
                     logger.debug("Reached max range for calculation");
                     break;
                 }

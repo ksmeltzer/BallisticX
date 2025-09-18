@@ -74,6 +74,7 @@
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
+    <li><a href="#References">Reference Material</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
@@ -116,7 +117,7 @@ If you are just looking to utilize the library in your own project you only need
 
 ** npm
   ```sh
-  npm install ballisticx@latest -g
+  npm install ballisticx@latest
   ```
 
 
@@ -204,11 +205,20 @@ Project Link: [https://github.com/ksmeltzer/BallisticX](https://github.com/ksmel
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
+<!-- References -->
+## Reference Material
+
+* [Wikipedia Internal Ballistics](https://en.wikipedia.org/wiki/Internal_ballistics)
+* [Propellant Gas Flow During Shot Ejection](https://apps.dtic.mil/sti/tr/pdf/ADA145890.pdf)
+
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
+I would like to give credit to the following resources.
 
 * [Choose an Open Source License](https://choosealicense.com)
 * [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)

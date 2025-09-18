@@ -2,20 +2,20 @@
 
 import { describe, test, assert } from "vitest";
 import  { DragFunction } from "../BalisticX.js";
-import  { Retard } from "../Retard.js";
 import  { Windage } from "../Windage.js";
-import  { Zero } from "../Zero.js";
+import  { zeroAngle } from "../Zero.js";
+import { calculateRetard } from "../Retard.js";
 
 describe('ballisticx Tests', () => {
     test('Zero Calculation', () => {
-        const G1 = Zero.ZeroAngle(DragFunction.G1, 0.465, 2650, 1.6, 200, 0);
-        const G2 = Zero.ZeroAngle(DragFunction.G2, 0.465, 2650, 1.6, 200, 0);
-        const G5 = Zero.ZeroAngle(DragFunction.G5, 0.465, 2650, 1.6, 200, 0);
-        const G6 = Zero.ZeroAngle(DragFunction.G6, 0.465, 2650, 1.6, 200, 0);
-        const G7 = Zero.ZeroAngle(DragFunction.G7, 0.465, 2650, 1.6, 200, 0);
-        const G8 = Zero.ZeroAngle(DragFunction.G8, 0.465, 2650, 1.6, 200, 0);
-        const I = Zero.ZeroAngle(DragFunction.I, 0.465, 2650, 1.6, 200, 0);
-        const B = Zero.ZeroAngle(DragFunction.B, 0.465, 2650, 1.6, 200, 0);
+        const G1 = zeroAngle(DragFunction.G1, 0.465, 2650, 1.6, 200, 0);
+        const G2 = zeroAngle(DragFunction.G2, 0.465, 2650, 1.6, 200, 0);
+        const G5 = zeroAngle(DragFunction.G5, 0.465, 2650, 1.6, 200, 0);
+        const G6 = zeroAngle(DragFunction.G6, 0.465, 2650, 1.6, 200, 0);
+        const G7 = zeroAngle(DragFunction.G7, 0.465, 2650, 1.6, 200, 0);
+        const G8 = zeroAngle(DragFunction.G8, 0.465, 2650, 1.6, 200, 0);
+        const I = zeroAngle(DragFunction.I, 0.465, 2650, 1.6, 200, 0);
+        const B = zeroAngle(DragFunction.B, 0.465, 2650, 1.6, 200, 0);
 
         assert.strictEqual(G1, 0.0998687744140625);
         assert.strictEqual(G2, 0.095596313476562514);
@@ -28,14 +28,14 @@ describe('ballisticx Tests', () => {
     });
 
     test('Calculate Retard', () => {
-        const G1 = Retard.CalcRetard(DragFunction.G1, 0.465, 2650);
-        const G2 = Retard.CalcRetard(DragFunction.G2, 0.465, 2650);
-        const G5 = Retard.CalcRetard(DragFunction.G5, 0.465, 2650);
-        const G6 = Retard.CalcRetard(DragFunction.G6, 0.465, 2650);
-        const G7 = Retard.CalcRetard(DragFunction.G7, 0.465, 2650);
-        const G8 = Retard.CalcRetard(DragFunction.G8, 0.465, 2650);
-        const I = Retard.CalcRetard(DragFunction.I, 0.465, 2650);
-        const B = Retard.CalcRetard(DragFunction.B, 0.465, 2650);
+        const G1 = calculateRetard(DragFunction.G1, 0.465, 2650);
+        const G2 = calculateRetard(DragFunction.G2, 0.465, 2650);
+        const G5 = calculateRetard(DragFunction.G5, 0.465, 2650);
+        const G6 = calculateRetard(DragFunction.G6, 0.465, 2650);
+        const G7 = calculateRetard(DragFunction.G7, 0.465, 2650);
+        const G8 = calculateRetard(DragFunction.G8, 0.465, 2650);
+        const I = calculateRetard(DragFunction.I, 0.465, 2650);
+        const B = calculateRetard(DragFunction.B, 0.465, 2650);
 
         assert.strictEqual(G1, 1700.6101549599655);
         assert.strictEqual(G2, 836.74681264648268);

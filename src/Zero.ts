@@ -1,34 +1,34 @@
 import { DragFunction, GRAVITY } from "./BalisticX.js";
-import { Retard } from "./Retard.js";
+import { calculateRetard } from "./Retard.js";
 import { AngleUnits, convert, MeasureUnits } from "./util/MeasurmentUnit.js";
 
-     export class Zero {
+
         /**
-         * ZeroAngle
+         * @function 
+         * @name zeroAngle
+         * @description Determines the bore angle needed to achieve a target zero at Range yards (at standard conditions and on level ground.)
          *
-         * Determines the bore angle needed to achieve a target zero at Range yards
-         * (at standard conditions and on level ground.)
-         *
-         * @param drag DragFunction enum value
-         * @param DragCoefficient The coefficient of drag for the projectile
-         * @param Vi The initial velocity of the projectile, in feet/s
-         * @param SightHeight The height of the sighting system above the bore centerline, in inches
-         * @param ZeroRange The range in yards at which you wish the projectile to intersect yIntercept
-         * @param yIntercept The height, in inches, you wish for the projectile to be when it crosses ZeroRange yards
-         * @return The angle of the bore relative to the sighting system, in degrees
+         * @param {DragFunction} drag enum value
+         * @param {number} dragCoefficient The coefficient of drag for the projectile
+         * @param {number} vi The initial velocity of the projectile, in feet/s
+         * @param {number} sightHeight The height of the sighting system above the bore centerline, in inches
+         * @param {number} zeroRange The range in yards at which you wish the projectile to intersect yIntercept
+         * @param {number} yIntercept The height, in inches, you wish for the projectile to be when it crosses ZeroRange yards
+         * 
+         * @returns {number} The angle of the bore relative to the sighting system, in degrees
          */
-        public static ZeroAngle(
+        export function zeroAngle(
             drag: DragFunction,
-            DragCoefficient: number,
-            Vi: number,
-            SightHeight: number,
-            ZeroRange: number,
+            dragCoefficient: number,
+            vi: number,
+            sightHeight: number,
+            zeroRange: number,
             yIntercept: number
         ): number {
             // Numerical Integration variables
             let t = 0;
-            let dt = 1 / Vi;
-            let y = -SightHeight / 12;
+            let dt = 1 / vi;
+            let y = -sightHeight / 12;
             let x = 0;
             let da = convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, 14);
 
@@ -43,18 +43,18 @@ import { AngleUnits, convert, MeasureUnits } from "./util/MeasurmentUnit.js";
 
             // Successive approximation loop
             for (angle = 0; !quit; angle = angle + da) {
-                vy = Vi * Math.sin(angle);
-                vx = Vi * Math.cos(angle);
+                vy = vi * Math.sin(angle);
+                vx = vi * Math.cos(angle);
                 Gx = GRAVITY * Math.sin(angle);
                 Gy = GRAVITY * Math.cos(angle);
 
-                for (t = 0, x = 0, y = -SightHeight / 12; x <= ZeroRange * 3; t = t + dt) {
+                for (t = 0, x = 0, y = -sightHeight / 12; x <= zeroRange * 3; t = t + dt) {
                     vy1 = vy;
                     vx1 = vx;
                     v = Math.sqrt(vx * vx + vy * vy);
                     dt = 1 / v;
 
-                    dv = Retard.CalcRetard(drag, DragCoefficient, v);
+                    dv = calculateRetard(drag, dragCoefficient, v);
                     dvy = -dv * vy / v * dt;
                     dvx = -dv * vx / v * dt;
 
@@ -97,4 +97,3 @@ import { AngleUnits, convert, MeasureUnits } from "./util/MeasurmentUnit.js";
             // Convert to degrees for return value.
             return convert(MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.DEGREE, angle);
         }
-    }

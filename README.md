@@ -123,7 +123,7 @@ If you are just looking to utilize the library in your own project you only need
 
 ### Prerequisites
 
-If you would like to contribute to or just run the project you will need to prerequisits:
+If you would like to contribute to or just run the project you will need to prerequisites:
 
 https://github.com/nvm-sh/nvm
 

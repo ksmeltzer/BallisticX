@@ -2,98 +2,153 @@ import { DragFunction, GRAVITY } from "./BallisticX.js";
 import { calculateRetard } from "./Retard.js";
 import { AngleUnits, convert, MeasureUnits } from "./util/MeasurementUnit.js";
 
-
 /**
- * @function 
+ * @function
  * @name zeroAngle
- * @description Determines the bore angle needed to achieve a target zero at Range yards (at standard conditions and on level ground.)
+ * @description Determines the bore angle needed to achieve a target zero at `zeroRange` yards
+ *              (assumes standard conditions and level ground; returns angle in degrees).
  *
- * @param {DragFunction} drag enum value
+ * @param {DragFunction} drag enum value (drag model selector)
  * @param {number} dragCoefficient The coefficient of drag for the projectile
- * @param {number} vi The initial velocity of the projectile, in feet/s
- * @param {number} sightHeight The height of the sighting system above the bore centerline, in inches
- * @param {number} zeroRange The range in yards at which you wish the projectile to intersect yIntercept
- * @param {number} yIntercept The height, in inches, you wish for the projectile to be when it crosses ZeroRange yards
- * 
- * @returns {number} The angle of the bore relative to the sighting system, in degrees
+ * @param {number} initialVelocity The muzzle / initial velocity of the projectile, in feet/s
+ * @param {number} sightHeightInches The height of the sighting system above the bore centerline, in inches
+ * @param {number} zeroRangeYards The range in yards at which you wish the projectile to intersect yIntercept
+ * @param {number} yInterceptInches The height, in inches, you wish for the projectile to be when it crosses zeroRangeYards
+ *
+ * @returns {number} The required bore-to-sight angle, in degrees
  */
 export function zeroAngle(
     drag: DragFunction,
     dragCoefficient: number,
-    vi: number,
-    sightHeight: number,
-    zeroRange: number,
-    yIntercept: number
+    initialVelocity: number,
+    sightHeightInches: number,
+    zeroRangeYards: number,
+    yInterceptInches: number
 ): number {
-    // Numerical Integration variables
-    let t = 0;
-    let dt = 1 / vi;
-    let y = -sightHeight / 12;
-    let x = 0;
-    let da = convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, 14);
+    // --- Numerical integration / iterative approximation setup ---
 
-    // State variables for each integration
-    let v = 0, vx = 0, vy = 0;
-    let vx1 = 0, vy1 = 0;
-    let dv = 0, dvx = 0, dvy = 0;
-    let Gx = 0, Gy = 0;
+    // time (seconds) and timestep (seconds)
+    let time = 0;
+    // initial timestep chosen as 1 / initial velocity (sec) — will be adjusted per-step by actual speed
+    let timeStep = 1 / initialVelocity;
 
-    let angle = 0;
-    let quit = false;
+    // vertical position (feet) — initialize to minus sight height (sight is above bore),
+    // convert inches to feet for internal computations
+    let verticalPositionFeet = -sightHeightInches / 12;
 
-    // Successive approximation loop
-    for (angle = 0; !quit; angle = angle + da) {
-        vy = vi * Math.sin(angle);
-        vx = vi * Math.cos(angle);
-        Gx = GRAVITY * Math.sin(angle);
-        Gy = GRAVITY * Math.cos(angle);
+    // horizontal range (feet) from muzzle
+    let horizontalRangeFeet = 0;
 
-        for (t = 0, x = 0, y = -sightHeight / 12; x <= zeroRange * 3; t = t + dt) {
-            vy1 = vy;
-            vx1 = vx;
-            v = Math.sqrt(vx * vx + vy * vy);
-            dt = 1 / v;
+    // initial angle step (radians) for the outer successive-approximation loop.
+    // This converts 14 degrees to radians and uses it as the initial step size.
+    let angleStepRadians = convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, 14);
 
-            dv = calculateRetard(drag, dragCoefficient, v);
-            dvy = -dv * vy / v * dt;
-            dvx = -dv * vx / v * dt;
+    // --- State variables used during the per-step integration ---
+    let speed = 0;              // instantaneous speed magnitude (ft/s)
+    let velocityX = 0;          // horizontal component of velocity (ft/s)
+    let velocityY = 0;          // vertical component of velocity (ft/s)
+    let prevVelocityX = 0;      // previous-step horizontal velocity (ft/s) used for trapezoidal integration
+    let prevVelocityY = 0;      // previous-step vertical velocity (ft/s)
+    let retardation = 0;        // magnitude of deceleration from drag (ft/s^2)
+    let deltaVx = 0;            // change in horizontal velocity over the step (ft/s)
+    let deltaVy = 0;            // change in vertical velocity over the step (ft/s)
+    let gravityAlongX = 0;      // gravity component along the X axis (ft/s^2)
+    let gravityAlongY = 0;      // gravity component along the Y axis (ft/s^2)
 
-            vy += (dvy + dt * Gy);
-            vx += (dvx + dt * Gx);
+    // current trial angle (radians)
+    let angleRadians = 0;
+    // loop control for successive approximation
+    let done = false;
 
-            x += (dt * (vx + vx1) / 2);
-            y += (dt * (vy + vy1) / 2);
+    // Convert the target y intercept (given in inches) to feet for internal calculations
+    const yInterceptFeet = yInterceptInches / 12;
+    // Convert the zero range from yards to feet for comparisons
+    const zeroRangeFeet = zeroRangeYards * 3; // 1 yard = 3 feet — NOTE: original code uses zeroRange * 3 as termination
 
-            // Break early to save CPU time if we won't find a solution
-            if ((vy < 0) && (y < yIntercept)) {
+    // --- Successive approximation (outer) loop:
+    // increment/decrement the launch angle and converge using halving of angleStepRadians
+    for (angleRadians = 0; !done; angleRadians = angleRadians + angleStepRadians) {
+        // Initialize velocity components for this trial angle
+        velocityY = initialVelocity * Math.sin(angleRadians);
+        velocityX = initialVelocity * Math.cos(angleRadians);
+
+        // Resolve gravity into components relative to the projectile's orientation
+        // GRAVITY is a magnitude; project into axes aligned with the launch angle.
+        gravityAlongX = GRAVITY * Math.sin(angleRadians);
+        gravityAlongY = GRAVITY * Math.cos(angleRadians);
+
+        // --- Time-stepping numerical integration loop for this trial angle ---
+        // Reset time and positions for each trial angle
+        for (
+            time = 0, 
+            horizontalRangeFeet = 0, 
+            verticalPositionFeet = -sightHeightInches / 12; 
+            horizontalRangeFeet <= zeroRangeFeet; 
+            time = time + timeStep
+        ) {
+            // store previous velocities for trapezoidal position integration
+            prevVelocityY = velocityY;
+            prevVelocityX = velocityX;
+
+            // instantaneous speed magnitude and adaptive timestep
+            speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
+            // keep timestep proportional to 1 / speed (smaller timestep when faster)
+            timeStep = 1 / speed;
+
+            // compute magnitude of deceleration (retardation) from the chosen drag model
+            retardation = calculateRetard(drag, dragCoefficient, speed);
+
+            // components of velocity change due to drag during this small time step
+            // dvx = - (retardation * vx / v ) * dt  (drag opposite to motion)
+            deltaVy = -retardation * velocityY / speed * timeStep;
+            deltaVx = -retardation * velocityX / speed * timeStep;
+
+            // update velocity components adding gravity components (note directions)
+            velocityY += (deltaVy + timeStep * gravityAlongY);
+            velocityX += (deltaVx + timeStep * gravityAlongX);
+
+            // integrate positions using trapezoidal rule (average current and previous velocity)
+            horizontalRangeFeet += (timeStep * (velocityX + prevVelocityX) / 2);
+            verticalPositionFeet += (timeStep * (velocityY + prevVelocityY) / 2);
+
+            // --- Early exit checks to save CPU if the projectile cannot reach the target yIntercept ---
+
+            // If projectile is descending (vy < 0) and already below target intercept, break:
+            if ((velocityY < 0) && (verticalPositionFeet < yInterceptFeet)) {
                 break;
             }
 
-            if (vy > 3 * vx) {
+            // Safety guard: if vertical velocity becomes unreasonably large compared to horizontal velocity,
+            // break to avoid pathological cases (preserves original behavior).
+            if (velocityY > 3 * velocityX) {
                 break;
             }
+        } // end per-angle integration loop
+
+        // --- Successive-approximation adjustment of angleStepRadians ---
+        // If the vertical position at the termination of the integration is above the target
+        // and we were stepping positively, reverse direction and halve the step (binary search-like).
+        if ((verticalPositionFeet > yInterceptFeet) && (angleStepRadians > 0)) {
+            angleStepRadians = -angleStepRadians / 2;
         }
 
-        if ((y > yIntercept) && (da > 0)) {
-            da = -da / 2;
+        // If below target and we were stepping negatively, reverse direction and halve step
+        if ((verticalPositionFeet < yInterceptFeet) && (angleStepRadians < 0)) {
+            angleStepRadians = -angleStepRadians / 2;
         }
 
-        if ((y < yIntercept) && (da < 0)) {
-            da = -da / 2;
+        // Stopping criterion: if angle step is sufficiently small (converted from MOA to radians),
+        // consider the solution converged.
+        if (Math.abs(angleStepRadians) < convert(MeasureUnits.ANGLE, AngleUnits.MOA, AngleUnits.RADIAN, 0.01)) {
+            done = true;
         }
 
-        // If our accuracy is sufficient, we can stop approximating
-        if (Math.abs(da) < convert(MeasureUnits.ANGLE, AngleUnits.MOA, AngleUnits.RADIAN, 0.01)) {
-            quit = true;
+        // Failsafe: if trial angle exceeds 45 degrees (converted to radians), stop — projectile won't reach target
+        if (angleRadians > convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, 45)) {
+            done = true;
         }
+    } // end successive approximation loop
 
-        // If we exceed the 45 degree launch angle, then the projectile just won't get there
-
-        if (angle > convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, 45)) {
-            quit = true;
-        }
-    }
-
-    // Convert to degrees for return value.
-    return convert(MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.DEGREE, angle);
+    // Convert final angle from radians to degrees before returning
+    return convert(MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.DEGREE, angleRadians);
 }

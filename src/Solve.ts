@@ -28,6 +28,7 @@ import { headWind, crossWind, calculateWindage } from "./Windage.js";
  * 
  * @see {@link https://en.wikipedia.org/wiki/Euler_method|Euler's Method}
  */
+
 export function solveAll(
     drag: DragFunction,
     dragCoefficient: number,
@@ -100,8 +101,18 @@ export function solveAll(
     // Counter for yard increments (solution is stored every yard)
     let yardsCounter = 0;
     
+    // Safety counter to prevent infinite loops
+    let iterationCount = 0;
+    const MAX_ITERATIONS = 100000;
+    
     // Main simulation loop - numerical integration of equations of motion
     for (timeElapsed = 0; ; timeElapsed = timeElapsed + timeStep) {
+        // Safety check to prevent infinite loops
+        iterationCount++;
+        if (iterationCount > MAX_ITERATIONS) {
+            logger.debug("Max iterations reached, terminating simulation");
+            break;
+        }
         // Store previous velocities for averaging (improves accuracy)
         previousHorizontalVelocity = horizontalVelocity;
         previousVerticalVelocity = verticalVelocity;
@@ -132,8 +143,10 @@ export function solveAll(
         horizontalVelocity += timeStep * horizontalAcceleration + timeStep * gravityHorizontalComponent;
         verticalVelocity += timeStep * verticalAcceleration + timeStep * gravityVerticalComponent;
 
-        // Store solution at each yard increment (x is in feet, so x/3 gives yards)
-        if (horizontalDistance / 3 >= yardsCounter) {
+        // Store solution at each yard increment (horizontalDistance is in feet, so /3 gives yards)
+        // Use Math.floor to ensure we only record once per yard
+        const currentYard = Math.floor(horizontalDistance / 3);
+        if (currentYard >= yardsCounter && horizontalDistance > 0) {
             // Calculate wind drift at this range
             const windageInches = calculateWindage(
                 crosswindComponent, 
@@ -142,16 +155,24 @@ export function solveAll(
                 timeElapsed + timeStep
             );
             
+            // Avoid division by zero in angle calculations
+            const correctionAngle = horizontalDistance > 0 
+                ? Math.atan(verticalDistance / horizontalDistance)
+                : 0;
+            const windageMOAAngle = (horizontalDistance > 0 && windageInches !== 0)
+                ? Math.atan(windageInches / (12 * horizontalDistance))
+                : 0;
+            
             // Create ballistic computation unit for this yard
             const unit: BallisticComputationUnit = {
-                range: horizontalDistance / 3, // Convert feet to yards
+                range: currentYard, // Integer yard value
                 drop: verticalDistance * 12, // Convert feet to inches
                 // Correction angle in MOA (negative because we measure drop below line of sight)
                 correction: - convert(
                     MeasureUnits.ANGLE, 
                     AngleUnits.RADIAN, 
                     AngleUnits.MOA, 
-                    Math.atan(verticalDistance / horizontalDistance)
+                    correctionAngle
                 ),
                 time: timeElapsed + timeStep,
                 windageInches: windageInches,
@@ -160,7 +181,7 @@ export function solveAll(
                     MeasureUnits.ANGLE, 
                     AngleUnits.RADIAN, 
                     AngleUnits.MOA, 
-                    Math.atan(windageInches / (12 * horizontalDistance))
+                    windageMOAAngle
                 ),
                 velocityCompensated: totalVelocity,
                 horizontalVelocity: horizontalVelocity,
@@ -168,7 +189,7 @@ export function solveAll(
             };
 
             solution.push(unit);
-            yardsCounter++;
+            yardsCounter = currentYard + 1; // Set counter to next yard to check
         }
 
         // Update position using average velocity (trapezoidal integration)
@@ -179,15 +200,34 @@ export function solveAll(
         logger.debug(`Updated Horizontal Position: ${horizontalDistance}`);
         logger.debug(`Updated Vertical Position: ${verticalDistance}`);
 
-        // Exit condition 1: Projectile trajectory becomes too steep
-        // If vertical velocity exceeds 3x horizontal velocity, projectile is falling nearly straight down
-        if (Math.abs(verticalVelocity) > Math.abs(3 * horizontalVelocity)) {
+        // Exit condition 1: Horizontal velocity too low (projectile essentially stopped)
+        if (Math.abs(horizontalVelocity) < 0.1) {
+            logger.debug("Horizontal velocity too low, terminating simulation");
             break;
         }
 
-        // Exit condition 2: Reached maximum calculation range
+        // Exit condition 2: Projectile trajectory becomes too steep
+        // If vertical velocity exceeds 3x horizontal velocity, projectile is falling nearly straight down
+        if (Math.abs(verticalVelocity) > Math.abs(3 * horizontalVelocity)) {
+            logger.debug("Trajectory too steep, terminating simulation");
+            break;
+        }
+
+        // Exit condition 3: Reached maximum calculation range
         if (yardsCounter >= BALLISTIC_COMPENSATION_MAX_RANGE + 1) {
             logger.debug("Reached max range for calculation");
+            break;
+        }
+        
+        // Exit condition 4: Velocity becomes invalid (NaN check)
+        if (isNaN(horizontalVelocity) || isNaN(verticalVelocity) || isNaN(horizontalDistance)) {
+            logger.debug("Invalid values detected, terminating simulation");
+            break;
+        }
+        
+        // Exit condition 5: Time step becomes too small (numerical instability)
+        if (timeStep < 1e-10) {
+            logger.debug("Time step too small, terminating simulation");
             break;
         }
     }

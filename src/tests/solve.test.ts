@@ -12,7 +12,7 @@ describe('solveAll', () => {
   beforeEach(() => {
     // Reset all mocks before each test
     vi.clearAllMocks();
-    
+
     // Setup default mock implementations with realistic values
     // Retardation should be proportional to velocity squared for realistic behavior
     vi.mocked(Retard.calculateRetard).mockImplementation((drag, bc, velocity) => {
@@ -56,7 +56,7 @@ describe('solveAll', () => {
     );
 
     const firstUnit = result[0];
-    
+
     expect(firstUnit).toHaveProperty('range');
     expect(firstUnit).toHaveProperty('drop');
     expect(firstUnit).toHaveProperty('correction');
@@ -80,8 +80,7 @@ describe('solveAll', () => {
       0,
       100
     );
-
-    expect(result[0].range).toBe(0);
+      expect(result[0]!.range).toBe(0);
   });
 
   it('should increment range by 1 yard for each unit', () => {
@@ -99,7 +98,7 @@ describe('solveAll', () => {
 
     // Check first few increments
     for (let i = 0; i < Math.min(5, result.length); i++) {
-      expect(result[i].range).toBe(i);
+      expect(result[i]!.range).toBe(i);
     }
   });
 
@@ -117,8 +116,8 @@ describe('solveAll', () => {
     );
 
     // At muzzle, projectile should be below line of sight (negative drop)
-    expect(result[0].drop).toBeLessThan(0);
-    expect(result[0].drop).toBeCloseTo(-1.5, 1);
+    expect(result[0]!.drop).toBeLessThan(0);
+    expect(result[0]!.drop).toBeCloseTo(-1.5, 1);
   });
 
   it('should show velocity decreasing over distance', () => {
@@ -135,9 +134,9 @@ describe('solveAll', () => {
     );
 
     // Velocity should decrease as bullet travels
-    const velocityAtStart = result[0].velocityCompensated;
-    const velocityAtMidpoint = result[Math.floor(result.length / 2)].velocityCompensated;
-    const velocityAtEnd = result[result.length - 1].velocityCompensated;
+    const velocityAtStart = result[0]!.velocityCompensated;
+    const velocityAtMidpoint = result[Math.floor(result.length / 2)]!.velocityCompensated;
+    const velocityAtEnd = result[result.length - 1]!.velocityCompensated;
 
     expect(velocityAtStart).toBeGreaterThan(velocityAtMidpoint);
     expect(velocityAtMidpoint).toBeGreaterThan(velocityAtEnd);
@@ -157,8 +156,8 @@ describe('solveAll', () => {
     );
 
     // Drop should increase (become more negative) as bullet travels
-    const dropAtStart = result[10].drop; // Skip first few due to sight height
-    const dropAtEnd = result[result.length - 1].drop;
+    const dropAtStart = result[10]!.drop; // Skip first few due to sight height
+    const dropAtEnd = result[result.length - 1]!.drop;
 
     expect(dropAtEnd).toBeLessThan(dropAtStart);
   });
@@ -178,7 +177,7 @@ describe('solveAll', () => {
 
     // Time should monotonically increase
     for (let i = 1; i < result.length; i++) {
-      expect(result[i].time).toBeGreaterThan(result[i - 1].time);
+      expect(result[i]!.time).toBeGreaterThan(result[i - 1]!.time);
     }
   });
 
@@ -197,8 +196,8 @@ describe('solveAll', () => {
 
     expect(Retard.calculateRetard).toHaveBeenCalled();
     const firstCall = vi.mocked(Retard.calculateRetard).mock.calls[0];
-    expect(firstCall[0]).toBe(DragFunction.G7);
-    expect(firstCall[1]).toBe(0.25);
+    expect(firstCall![0]).toBe(DragFunction.G7);
+    expect(firstCall![1]).toBe(0.25);
   });
 
   it('should calculate wind components when wind is present', () => {
@@ -222,7 +221,7 @@ describe('solveAll', () => {
   it('should apply headwind effect to drag calculation', () => {
     // Mock headwind to return 10 mph
     vi.mocked(Windage.headWind).mockReturnValue(10);
-    
+
     solveAll(
       DragFunction.G1,
       0.5,
@@ -238,9 +237,9 @@ describe('solveAll', () => {
     // Check that calculateRetard was called with velocity adjusted for headwind
     const calls = vi.mocked(Retard.calculateRetard).mock.calls;
     expect(calls.length).toBeGreaterThan(0);
-    
+
     // Headwind should increase effective velocity (10 mph = 14.67 fps)
-    const velocityWithWind = calls[0][2];
+    const velocityWithWind = calls[0]![2];
     expect(velocityWithWind).toBeGreaterThan(2800);
   });
 
@@ -270,9 +269,9 @@ describe('solveAll', () => {
     );
 
     // Uphill shooting should result in less drop at same range
-    const uphillDrop = uphillResult[100]?.drop || uphillResult[uphillResult.length - 1].drop;
-    const flatDrop = flatResult[100]?.drop || flatResult[flatResult.length - 1].drop;
-    
+    const uphillDrop = uphillResult[100]?.drop || uphillResult[uphillResult.length - 1]!.drop;
+    const flatDrop = flatResult[100]?.drop || flatResult[flatResult.length - 1]!.drop;
+
     expect(uphillDrop).toBeGreaterThan(flatDrop);
   });
 
@@ -302,9 +301,9 @@ describe('solveAll', () => {
     );
 
     // Downhill shooting should also result in less drop at same range
-    const downhillDrop = downhillResult[100]?.drop || downhillResult[downhillResult.length - 1].drop;
-    const flatDrop = flatResult[100]?.drop || flatResult[flatResult.length - 1].drop;
-    
+    const downhillDrop = downhillResult[100]?.drop || downhillResult[downhillResult.length - 1]!.drop;
+    const flatDrop = flatResult[100]?.drop || flatResult[flatResult.length - 1]!.drop;
+
     expect(downhillDrop).toBeGreaterThan(flatDrop);
   });
 
@@ -322,8 +321,8 @@ describe('solveAll', () => {
     );
 
     // With positive zero angle, bullet should rise initially
-    const earlyDrop = result[5].drop;
-    expect(earlyDrop).toBeGreaterThan(result[0].drop);
+    const earlyDrop = result[5]!.drop;
+    expect(earlyDrop).toBeGreaterThan(result[0]!.drop);
   });
 
   it('should stop when projectile trajectory becomes too steep', () => {
@@ -370,12 +369,12 @@ describe('solveAll', () => {
     );
 
     expect(result1.length).toBe(result2.length);
-    expect(result1[0].drop).toBe(result2[0].drop);
-    expect(result1[result1.length - 1].velocityCompensated)
-      .toBe(result2[result2.length - 1].velocityCompensated);
+    expect(result1[0]!.drop).toBe(result2[0]!.drop);
+    expect(result1[result1.length - 1]!.velocityCompensated)
+      .toBe(result2[result2.length - 1]!.velocityCompensated);
   });
 
-  it.skip('should handle high drag coefficient (slower velocity decay)', () => {
+  /*it.skip('should handle high drag coefficient (slower velocity decay)', () => {
     const highDragResult = solveAll(
       DragFunction.G1,
       0.8,      // High drag
@@ -401,11 +400,11 @@ describe('solveAll', () => {
     );
 
     // High drag should result in more velocity loss
-    const highDragFinalVelocity = highDragResult[highDragResult.length - 1].velocityCompensated;
-    const lowDragFinalVelocity = lowDragResult[lowDragResult.length - 1].velocityCompensated;
+    const highDragFinalVelocity = highDragResult[highDragResult.length - 1]!.velocityCompensated;
+    const lowDragFinalVelocity = lowDragResult[lowDragResult.length - 1]!.velocityCompensated;
 
     expect(lowDragFinalVelocity).toBeGreaterThan(highDragFinalVelocity);
-  });
+  });*/
 
   it('should have all positive time values', () => {
     const result = solveAll(
@@ -425,7 +424,7 @@ describe('solveAll', () => {
     });
   });
 
-  it.skip('should calculate correction angle in MOA', () => {
+  /*it.skip('should calculate correction angle in MOA', () => {
     const result = solveAll(
       DragFunction.G1,
       0.5,
@@ -444,5 +443,5 @@ describe('solveAll', () => {
       expect(correctionAt100Yards).toBeLessThan(0);
       expect(typeof correctionAt100Yards).toBe('number');
     }
-  });
+  });*/
 });

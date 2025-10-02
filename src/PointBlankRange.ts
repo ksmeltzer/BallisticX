@@ -133,6 +133,7 @@ export function calculatePointBlankRange(
                 maxPBRFound = true;
             }
             if (!vertexFound && velY < 0) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 vertexX = posX;
                 vertexY = posY;
                 vertexFound = true;

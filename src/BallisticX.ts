@@ -47,6 +47,7 @@ export enum PropellentGasVelocity {
     HIGH_POWER_RIFLE = 1.75,
     SHOTGUN = 1.50,
     SHOTGUN_LONG = 1.25,
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
     HANDGUN = 1.50
 }
 
@@ -65,8 +66,8 @@ export enum DragFunction {
     G6 = "G6",
     G7 = "G7",
     G8 = "G8",
-    I = "Ingalls",
-    B = "British"
+    I = "I",
+    B = "B"
 }
 
 /**

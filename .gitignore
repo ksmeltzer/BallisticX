@@ -5,3 +5,5 @@ tmp/*
 package-lock.json
 
 .vscode/
+
+.clinic/

@@ -8,10 +8,14 @@
     "src": "./src"
   },
   "exports": {
-        ".": "./dist/index.js"
-      },
+    ".": "./dist/index.js"
+  },
   "scripts": {
     "test": "vitest",
+    "test:doctor": "clinic doctor 'autocannon [/]' -- node ./perf/perf.js",
+    "test:flame": "clinic flame -- node ./perf/perf.js",
+    "test:bubbleprof": "clinic bubbleprof -- node ./perf/perf.js",
+    "test:heapprofiler": "clinic heapprofiler -- node ./perf/perf.js",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\"",
     "lint:fix": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "clean": "rm -rf ./dist",
@@ -43,6 +47,7 @@
     "@typescript-eslint/parser": "^8.44.0",
     "eslint": "^9.35.0",
     "globals": "^16.4.0",
+    "tsx": "^4.20.6",
     "typedoc": "^0.28.13",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.0",

@@ -70,6 +70,8 @@ export enum DragFunction {
     B = "B"
 }
 
+export type DragFunctionType = keyof typeof DragFunction;
+
 /**
  * @enum {number}
  * @name BulletSpecificGravity

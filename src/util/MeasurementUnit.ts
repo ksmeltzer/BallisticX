@@ -1,4 +1,20 @@
 import * as Temperature from 'temperature-util';
+import {
+    ok,
+    err,
+    Result,
+
+} from 'neverthrow';
+
+
+/**
+ * NOTICE: 
+ * This entire measurement converter util is a very rough implementation of an idea I had mid project where I could built a very extensible measurement converter, that can convert any compatible units to and fro. This is very much rough and hard-coded, and eventually this whole util will be removed from this project and moved into it’s own npm library. 
+ * The idea is that arbitrary unit translators could be built in json or code and injected into the measurement converter. To support things as vast as say converting DnD D20 rules to other systems and vice versa. Eventually it will be expanded via generics to even allow for custom objects to be returned for more complex conversions.
+ * As well the idea is to utilize a combination of AJV, TS-Morph the TS AST to create a generator that will generate hard implementation interface functions for the conversions. I am well aware that using enums and associative arrays in loose parameters is not an idea API, that is not the focus of this project and it suffices for now. I implemented this way for now to flesh out the rough idea. This is not completed code nor will the solution look anything like it when it was done. 
+ */
+
+
 
 interface IUnitConverter {
     (val: number): number;
@@ -12,16 +28,19 @@ export enum MeasureUnits {
 
 const measures: Record<string, Record<string, Record<string, IUnitConverter>>> = {};
 
-export const convert = (measure: string, fromUnit: string, toUnit: string, amount: number): number => {
+export const convert = (measure: string, fromUnit: string, toUnit: string, amount: number): Result<number, Error> => {
     const m = measures[measure];
     if (m) {
         const from = m[fromUnit];
         if (from && from[toUnit]) {
             const calcFunc: IUnitConverter = from[toUnit];
-            return calcFunc(amount);
+            return ok(calcFunc(amount));
         }
+        const e = new Error("fromUnit not found in dictionary of units.")
+        return err(e);
     }
-    return 0;
+    const e = new Error("fromUnit not found in dictionary of units.")
+    return err(e);
 }
 
 export const addConverter = (measure: string, fromUnit: string, toUnit: string, formula: IUnitConverter) => {

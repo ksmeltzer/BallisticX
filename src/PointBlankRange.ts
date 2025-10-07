@@ -44,7 +44,7 @@ export function calculatePointBlankRange(
     // --- Integration parameters ---
     let trajectoryAngle = 0; // initial firing angle (degrees)
     let angleStep = 10;      // step to adjust angle during iteration
-    const maxIterations = 1000; // safeguard for infinite loops
+    const maxIterations = 10; // safeguard for infinite loops
     const tolerance = 0.01 / 60; // convergence tolerance (degrees)
 
     // --- Convergence flags ---

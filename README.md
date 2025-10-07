@@ -84,6 +84,17 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
+Note: If you have happened upon this project, due to my actively applying for a position, please keep in mind that this project is:
+
+* A project based off of reading and transcribing several ballistic solution such as the GNU Ballistic Computer, the work of Euler, Runge, Kutta and many others. I am not a ballistic expert, I am in-fact very novice on the subject. I will compile a list of credits in this read me citing all of the implementations, algorithms and formulas to credit the proper individuals.
+
+* This project is very much in the works, it is not finished code, it has temporary implementation details, stubs and other items to “get it to work” to help improve my understanding of the subject matter.
+
+* A project that I endeavor to learn the subject of external ballistics. While you can gain some insight into the way I document code, write test, organize code, build API’s ect. It is not code that I would submit as being ready for prime time and at any given time it can be in flux, broken or stubbed as I utilize it to learn. One of the ways that I do learn is to use AI tools to explain to me what the code is doing. I then transcribe my understanding of what AI has told me and what I read in documents on the subject into comments. AI did not write the code or comments, some code is direct translation from algorithms in other projects or math papers. I assume the code is correct, but they comments may not 100% accurately reflect the purpose of the code. Because I do not yet 100% understand the subject matter and lean on both contextual AI and reference books/online articles. 
+
+
+
+
 BallisticX is a Typescript library for ballistic calculation, it draws inspiration from the GNU Ballistic computer but was initiated as a way for the author to learn the deeper nuances of small arms ballistics. The library provides calculation functions for the following sub-disciplines of ballistics:
 
 * Internal

@@ -16,6 +16,8 @@ import { AngleUnits, convert, MeasureUnits } from "./util/MeasurementUnit.js";
  * @param {number} yInterceptInches The height, in inches, you wish for the projectile to be when it crosses zeroRangeYards
  *
  * @returns {number} The required bore-to-sight angle, in degrees
+ * 
+ * @see {@link https://en.wikipedia.org/wiki/Euler_angles | Euler Angle}
  */
 export function zeroAngle(
     drag: DragFunction,
@@ -52,7 +54,8 @@ export function zeroAngle(
     let retardation = 0;        // magnitude of deceleration from drag (ft/s^2)
     let deltaVx = 0;            // change in horizontal velocity over the step (ft/s)
     let deltaVy = 0;            // change in vertical velocity over the step (ft/s)
-    let gravityAlongX = 0;      // gravity component along the X axis (ft/s^2)
+    //NOTE: The coordinate system is often rotated to align with the surface when measurements are on a ramp. 
+    let gravityAlongIncline = 0;      // gravity component along the incline axis (ft/s^2)
     let gravityAlongY = 0;      // gravity component along the Y axis (ft/s^2)
 
     // current trial angle (radians)
@@ -74,7 +77,7 @@ export function zeroAngle(
 
         // Resolve gravity into components relative to the projectile's orientation
         // GRAVITY is a magnitude; project into axes aligned with the launch angle.
-        gravityAlongX = GRAVITY * Math.sin(angleRadians);
+        gravityAlongIncline = GRAVITY * Math.sin(angleRadians);
         gravityAlongY = GRAVITY * Math.cos(angleRadians);
 
         // --- Time-stepping numerical integration loop for this trial angle ---
@@ -105,7 +108,7 @@ export function zeroAngle(
 
             // update velocity components adding gravity components (note directions)
             velocityY += (deltaVy + timeStep * gravityAlongY);
-            velocityX += (deltaVx + timeStep * gravityAlongX);
+            velocityX += (deltaVx + timeStep * gravityAlongIncline);
 
             // integrate positions using trapezoidal rule (average current and previous velocity)
             horizontalRangeFeet += (timeStep * (velocityX + prevVelocityX) / 2);

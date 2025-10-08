@@ -1,6 +1,8 @@
 import { convert, MassUnits, MeasureUnits } from "./util/MeasurementUnit.js";
 import logger from "./util/Logger.js";
 import { GRAVITY } from "./BallisticX.js";
+import { ok, err, type Result } from "neverthrow";
+import { V } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
 
 
 /**
@@ -22,13 +24,22 @@ export function calculateFreeRecoil(
     propellentWeight: number,
     propellentGasVelocity: number,
     firearmWeight: number
-): number {
+): Result<number, Error> {
     const M = (firearmWeight / (GRAVITY * 2));
 
-    const V = (((projectileWeight * projectileVelocity) + (propellentWeight * propellentGasVelocity)) / convert(MeasureUnits.MASS, MassUnits.POUND, MassUnits.GRAIN, firearmWeight));
+    const result = convert(MeasureUnits.MASS, MassUnits.POUND, MassUnits.GRAIN, firearmWeight);
+    if (result.isOk()) {
+        const value = result.value
+        const V = (((projectileWeight * projectileVelocity) + (propellentWeight * propellentGasVelocity)) / value);
 
-    logger.debug(`M: ${M}`);
-    logger.debug(`V: ${V}`);
+        logger.debug(`M: ${M}`);
+        logger.debug(`V: ${V}`);
+        return ok(M * V * V);
+    }
+    else {
+        const cause = result.error;
+        const e = new Error("Failed to convert the firearmWeight from Pounds to Grains", { cause: cause });
+        return err(e);
 
-    return M * V * V;
+    }
 }

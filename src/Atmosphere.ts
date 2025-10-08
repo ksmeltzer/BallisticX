@@ -114,17 +114,33 @@ export function correctDragCoefficient(
     barometer: number,
     temperature: number,
     relativeHumidity: number
-): number {
+): Result<number, Error> {
+    const results : Record<string, Result<number, Error>> = {};
+    const values: {[key: string]: number} = {};
+    values.fTemperature = 0;
     const fAltitude = calculateStandardizedAltitude(altitude);
-    const fTemperature = calculateStandardizedTemperature(temperature, altitude);
+    results["fTemperature"] = calculateStandardizedTemperature(temperature, altitude);
     const fRefraction = calculateRefraction(temperature, barometer, relativeHumidity);
     const fPressure = calculateStandardizedPressure(barometer);
 
+    for (const key in results) { //We have a bunch of neverthrow wrapped result values, it is easier to deal with the error branches generically by stuffing them all into a Record.
+        const result = results[key] as Result<number, Error>; //would rather force the type rather and lint disable, we know results keyof cannot be undefined.
+        if(result.isOk()) {
+            values[key] = result.value
+        }
+        else {
+            const stackErr = result.error
+            return err(new Error(`Error setting value for ${key}`, {cause: stackErr}));
+
+        }
+    }
+    
+
     // Calculate the atmospheric correction factor
-    const correctedDrag = fAltitude * (1 + fTemperature - fPressure) * fRefraction;
+    const correctedDrag = fAltitude * (1 + values.fTemperature - fPressure) * fRefraction;
 
     logger.debug(`Calculated Atmospheric Correction Factor: ${correctedDrag}`);
     logger.debug(`Atmospheric Correction Factor * Drag: ${dragCoefficient * correctedDrag}`);
 
-    return dragCoefficient * correctedDrag;
+    return ok(dragCoefficient * correctedDrag);
 }

@@ -1,3 +1,4 @@
+import { err, ok, type Result } from "neverthrow";
 import { DragFunction, GRAVITY, BALLISTIC_COMPENSATION_MAX_RANGE } from "./BallisticX.js";
 import { calculateRetard } from "./Retard.js";
 import type { BallisticComputationUnit } from "./types/BallisticComputationUnit.js";
@@ -40,7 +41,7 @@ export function solveAll(
     windAngle: number,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _zero: number
-): Array<BallisticComputationUnit> {
+): Result<Array<BallisticComputationUnit>, Error> {
     // Time tracking variables
     let timeElapsed = 0; // Total time since projectile left the barrel (seconds)
     let timeStep = 0.5 / initialVelocity; // Adaptive time step for numerical integration (seconds)
@@ -68,24 +69,39 @@ export function solveAll(
 
     // Calculate gravity vector components based on shooting angle
     // When shooting uphill/downhill, gravity affects trajectory differently
-    const gravityVerticalComponent = GRAVITY * Math.cos(
-        convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, shootingAngle + zeroAngle)
-    );
-    const gravityHorizontalComponent = GRAVITY * Math.sin(
-        convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, shootingAngle + zeroAngle)
-    );
+    const zeroAngleResults : Record<string, Result<number, Error>> = {
+        zeroAnglePlusShootingAngle: convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, shootingAngle + zeroAngle),
+        zeroAngle: convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, zeroAngle)
+        
+    };
+    const zeroAngleValues : {[key: string] : number} = {}
+    zeroAngleValues.zeroAnglePlusShootingAngle = 0;
+    zeroAngleValues.zeroAngle = 0;
+
+    
+
+    for (const key in zeroAngleResults) {
+        const result = zeroAngleResults[key] as Result<number, Error>;
+        if(result.isOk()) {
+            zeroAngleValues[key] = result.value;
+        }
+        else {
+            const stackErr = result.error;
+            return err(new Error(`Error converting ${key} due to measurement conversion error.`, {cause: stackErr}));
+        }
+    }
+
+    
+    const gravityVerticalComponent = GRAVITY * Math.cos(zeroAngleValues.zeroAnglePlusShootingAngle);
+    const gravityHorizontalComponent = GRAVITY * Math.sin(zeroAngleValues.zeroAnglePlusShootingAngle);
 
     logger.debug(`Gravity Vertical Component: ${gravityVerticalComponent}`);
     logger.debug(`Gravity Horizontal Component: ${gravityHorizontalComponent}`);
 
     // Initialize velocity components based on zero angle
     // The projectile leaves at an angle relative to the bore axis
-    horizontalVelocity = initialVelocity * Math.cos(
-        convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, zeroAngle)
-    );
-    verticalVelocity = initialVelocity * Math.sin(
-        convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, zeroAngle)
-    );
+    horizontalVelocity = initialVelocity * Math.cos(zeroAngleValues.zeroAngle);
+    verticalVelocity = initialVelocity * Math.sin(zeroAngleValues.zeroAngle);
     
     logger.debug(`Initial Horizontal Velocity: ${horizontalVelocity}`);
     logger.debug(`Initial Vertical Velocity: ${verticalVelocity}`);
@@ -164,6 +180,17 @@ export function solveAll(
                 : 0;
             
             // Create ballistic computation unit for this yard
+            const windageResult = convert( MeasureUnits.ANGLE, AngleUnits.RADIAN, AngleUnits.MOA, windageMOAAngle );
+            let windageMOA = 0;
+            if( windageResult.isOk() )
+            {
+                windageMOA = windageResult.value;
+            }
+            else {
+                const stackError = windageResult.error;
+                return err(new Error("Error converting windageMOAAngle from radian to moa.", {cause : stackError }))
+            }
+
             const unit: BallisticComputationUnit = {
                 range: currentYard, // Integer yard value
                 drop: verticalDistance * 12, // Convert feet to inches
@@ -177,12 +204,8 @@ export function solveAll(
                 time: timeElapsed + timeStep,
                 windageInches: windageInches,
                 // Convert windage to angular measurement (MOA)
-                windageMOA: convert(
-                    MeasureUnits.ANGLE, 
-                    AngleUnits.RADIAN, 
-                    AngleUnits.MOA, 
-                    windageMOAAngle
-                ),
+                
+                windageMOA: windageMOA,
                 velocityCompensated: totalVelocity,
                 horizontalVelocity: horizontalVelocity,
                 verticalVelocity: verticalVelocity
@@ -232,5 +255,5 @@ export function solveAll(
         }
     }
 
-    return solution;
+    return ok( solution );
 }

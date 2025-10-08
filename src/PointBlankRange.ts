@@ -2,6 +2,8 @@ import { AngleUnits, convert, MeasureUnits } from "./util/MeasurementUnit.js";
 import { DragFunction, GRAVITY } from "./BallisticX.js";
 import type { PointBlankRangeResult } from "./types/PointBlankRangeResult.js";
 import { calculateRetard } from "./Retard.js";
+import { err, ok, type Result } from "neverthrow";
+import logger from "./util/Logger.js";
 
 /**
  * @function
@@ -32,14 +34,8 @@ export function calculatePointBlankRange(
     initialVelocity: number,
     sightHeight: number,
     vitalZoneSize: number
-): PointBlankRangeResult {
-    const result: PointBlankRangeResult = {
-        nearZero: 0,
-        farZero: 0,
-        minPointBlankRange: 0,
-        maxPointBlankRange: 0,
-        sightInHeight: 0
-    };
+): Result<PointBlankRangeResult, Error> {
+
 
     // --- Integration parameters ---
     let trajectoryAngle = 0; // initial firing angle (degrees)
@@ -51,102 +47,123 @@ export function calculatePointBlankRange(
     let finished = false;
 
     // Variables to store critical distances
-        let nearZero = 0, farZero = 0;
-        let minPBR = 0, maxPBR = 0;
-        let vertexX = 0, vertexY = 0;
-        let sightInHeight = 0;
+    let nearZero = 0, farZero = 0;
+    let minPBR = 0, maxPBR = 0;
+    let vertexX = 0, vertexY = 0;
+    let sightInHeight = 0;
 
     // --- Loop until vertex height matches vital zone constraints ---
     while (!finished) {
         // Initial state
         let posX = 0;
         let posY = -sightHeight / 12; // convert inches to feet
-        let velX = initialVelocity * Math.cos(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, trajectoryAngle));
-        let velY = initialVelocity * Math.sin(convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, trajectoryAngle));
+        const result = convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, trajectoryAngle)
+        if (result.isErr()) {
+            const e = result.error;
+            return err(new Error("Could not set initialVelocity, due to degree conversion error.", { cause: e }));
+        }
+        else {
+            let velX = initialVelocity * Math.cos(result.value);
+            let velY = initialVelocity * Math.sin(result.value);
 
-        // Flags for tracking critical points
-        let nearZeroFound = false;
-        let farZeroFound = false;
-        let minPBRFound = false;
-        let maxPBRFound = false;
-        let vertexFound = false;
-        let sightInRecorded = false;
-
-
-
-        // --- Time stepping ---
-        let dt = 0.001; // initial timestep (seconds)
-        for (let step = 0; step < maxIterations; step++) {
-            const speed = Math.sqrt(velX * velX + velY * velY);
-            dt = Math.min(0.5 / speed, 0.01); // adaptive timestep
-
-            // Calculate drag acceleration
-            const dragAccel = calculateRetard(drag, dragCoefficient, speed);
-
-            // Resolve gravity
-            const angleRad = convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, trajectoryAngle);
-            const accelX = - (velX / speed) * dragAccel + GRAVITY * Math.sin(angleRad);
-            const accelY = - (velY / speed) * dragAccel + GRAVITY * Math.cos(angleRad);
-
-            // --- RK4 Integration ---
-            const k1x = velX * dt;
-            const k1y = velY * dt;
-            const k1vx = accelX * dt;
-            const k1vy = accelY * dt;
-
-            const k2x = (velX + k1vx / 2) * dt;
-            const k2y = (velY + k1vy / 2) * dt;
-            const k2vx = accelX * dt;
-            const k2vy = accelY * dt;
-
-            const k3x = (velX + k2vx / 2) * dt;
-            const k3y = (velY + k2vy / 2) * dt;
-            const k3vx = accelX * dt;
-            const k3vy = accelY * dt;
-
-            const k4x = (velX + k3vx) * dt;
-            const k4y = (velY + k3vy) * dt;
-            const k4vx = accelX * dt;
-            const k4vy = accelY * dt;
-
-            posX += (k1x + 2*k2x + 2*k3x + k4x) / 6;
-            posY += (k1y + 2*k2y + 2*k3y + k4y) / 6;
-            velX += (k1vx + 2*k2vx + 2*k3vx + k4vx) / 6;
-            velY += (k1vy + 2*k2vy + 2*k3vy + k4vy) / 6;
+            // Flags for tracking critical points
+            let nearZeroFound = false;
+            let farZeroFound = false;
+            let minPBRFound = false;
+            let maxPBRFound = false;
+            let vertexFound = false;
+            let sightInRecorded = false;
 
 
-            // --- Record critical points ---
-            if (!nearZeroFound && posY >= 0 && velY >= 0) {
-                nearZero = posX;
-                nearZeroFound = true;
-            }
-            if (!farZeroFound && posY < 0 && velY <= 0) {
-                farZero = posX;
-                farZeroFound = true;
-            }
-            if (!minPBRFound && 12 * posY > -vitalZoneSize / 2) {
-                minPBR = posX;
-                minPBRFound = true;
-            }
-            if (minPBRFound && !maxPBRFound && 12 * posY < -vitalZoneSize / 2) {
-                maxPBR = posX;
-                maxPBRFound = true;
-            }
-            if (!vertexFound && velY < 0) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                vertexX = posX;
-                vertexY = posY;
-                vertexFound = true;
-            }
-            if (!sightInRecorded && posX >= 300) {
-                sightInHeight = 100 * posY * 12; // hundredths of inch
-                sightInRecorded = true;
-            }
 
-            if (nearZeroFound && farZeroFound && minPBRFound && maxPBRFound && vertexFound && sightInRecorded) {
-                break;
+            // --- Time stepping ---
+            let dt = 0.001; // initial timestep (seconds)
+            for (let step = 0; step < maxIterations; step++) {
+                const speed = Math.sqrt(velX * velX + velY * velY);
+                dt = Math.min(0.5 / speed, 0.01); // adaptive timestep
+
+                // Calculate drag acceleration
+                const dragAccel = calculateRetard(drag, dragCoefficient, speed);
+
+                // Resolve gravity
+                const result = convert(MeasureUnits.ANGLE, AngleUnits.DEGREE, AngleUnits.RADIAN, trajectoryAngle);
+                if (result.isErr()) {
+                    const e = result.error;
+                    logger.debug("conversion for trajectoryAngle errored.", e);
+                    //TODO: this needs to be well tested, if values are out of bound for an iteration it may not have an effect. You need to study the RK4 formula more to understand the impact of loosing an iteration. For now we return an error, but we may be able to just log and skip this iteration.
+                    return err(new Error(`Error trying to calculate trajectoryAngle on iteration ${step}`, { cause: e }))
+                    //continue
+                }
+                else {
+
+                    const angleRad = result.value
+
+                    const accelX = - (velX / speed) * dragAccel + GRAVITY * Math.sin(angleRad);
+                    const accelY = - (velY / speed) * dragAccel + GRAVITY * Math.cos(angleRad);
+
+                    // --- RK4 Integration ---
+                    const k1x = velX * dt;
+                    const k1y = velY * dt;
+                    const k1vx = accelX * dt;
+                    const k1vy = accelY * dt;
+
+                    const k2x = (velX + k1vx / 2) * dt;
+                    const k2y = (velY + k1vy / 2) * dt;
+                    const k2vx = accelX * dt;
+                    const k2vy = accelY * dt;
+
+                    const k3x = (velX + k2vx / 2) * dt;
+                    const k3y = (velY + k2vy / 2) * dt;
+                    const k3vx = accelX * dt;
+                    const k3vy = accelY * dt;
+
+                    const k4x = (velX + k3vx) * dt;
+                    const k4y = (velY + k3vy) * dt;
+                    const k4vx = accelX * dt;
+                    const k4vy = accelY * dt;
+
+                    posX += (k1x + 2 * k2x + 2 * k3x + k4x) / 6;
+                    posY += (k1y + 2 * k2y + 2 * k3y + k4y) / 6;
+                    velX += (k1vx + 2 * k2vx + 2 * k3vx + k4vx) / 6;
+                    velY += (k1vy + 2 * k2vy + 2 * k3vy + k4vy) / 6;
+
+
+                    // --- Record critical points ---
+                    if (!nearZeroFound && posY >= 0 && velY >= 0) {
+                        nearZero = posX;
+                        nearZeroFound = true;
+                    }
+                    if (!farZeroFound && posY < 0 && velY <= 0) {
+                        farZero = posX;
+                        farZeroFound = true;
+                    }
+                    if (!minPBRFound && 12 * posY > -vitalZoneSize / 2) {
+                        minPBR = posX;
+                        minPBRFound = true;
+                    }
+                    if (minPBRFound && !maxPBRFound && 12 * posY < -vitalZoneSize / 2) {
+                        maxPBR = posX;
+                        maxPBRFound = true;
+                    }
+                    if (!vertexFound && velY < 0) {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        vertexX = posX;
+                        vertexY = posY;
+                        vertexFound = true;
+                    }
+                    if (!sightInRecorded && posX >= 300) {
+                        sightInHeight = 100 * posY * 12; // hundredths of inch
+                        sightInRecorded = true;
+                    }
+
+                    if (nearZeroFound && farZeroFound && minPBRFound && maxPBRFound && vertexFound && sightInRecorded) {
+                        break;
+                    }
+                }
+
             }
         }
+
 
         // --- Adjust trajectory angle for PBR constraints ---
         const vertexInches = vertexY * 12;
@@ -163,11 +180,11 @@ export function calculatePointBlankRange(
     }
 
     // --- Convert results to yards ---
-    result.nearZero = nearZero / 3;
-    result.farZero = farZero / 3;
-    result.minPointBlankRange = minPBR / 3;
-    result.maxPointBlankRange = maxPBR / 3;
-    result.sightInHeight = sightInHeight / 100;
-
-    return result;
+    return ok({
+        nearZero: nearZero / 3,
+        farZero: farZero / 3,
+        minPointBlankRange: minPBR / 3,
+        maxPointBlankRange: maxPBR / 3,
+        sightInHeight: sightInHeight / 100
+    });
 }

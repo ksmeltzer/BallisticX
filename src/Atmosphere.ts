@@ -1,7 +1,7 @@
 import { convert, MeasureUnits, TemperatureUnits } from "./util/MeasurementUnit.js";
 import logger from "./util/Logger.js";
 import { STANDARD_PRESSURE, STANDARD_TEMPERATURE } from "./BallisticX.js"
-import { err, ok, Ok, type Result } from "neverthrow";
+import { err, ok, type Result } from "neverthrow";
 
 /**
  * @function
@@ -58,7 +58,7 @@ export function calculateStandardizedTemperature(temperature: number, altitude: 
 
     // Divide by "standard temp" above converted to Rankine
     const result = convert(MeasureUnits.TEMPERATURE, TemperatureUnits.FAHRENHEIT, TemperatureUnits.RANKINE, tstd);
-)
+
     if(result.isOk()) {
         const value = result.value
         const FT = (temperature - tstd) / value;
@@ -66,8 +66,8 @@ export function calculateStandardizedTemperature(temperature: number, altitude: 
         return ok(FT);
     }
     else {
-        const value = result.error;
-        const e = new Error("Measurement conversion error", { cause: err });
+        const stackError = result.error;
+        const e = new Error("Measurement conversion error", { cause: stackError });
         return err(e);
 
     }

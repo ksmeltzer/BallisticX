@@ -1,4 +1,5 @@
 
+import { err, ok, type Result } from "neverthrow";
 import { convert, MassUnits, MeasureUnits } from "./util/MeasurementUnit.js";
 
 /**
@@ -12,6 +13,15 @@ import { convert, MassUnits, MeasureUnits } from "./util/MeasurementUnit.js";
  * 
  * @see https://en.wikipedia.org/wiki/Sectional_density
  */
-export function calculateSectionalDensity(weight: number, diameter: number): number {
-    return convert(MeasureUnits.MASS, MassUnits.GRAIN, MassUnits.POUND, weight) / Math.pow(diameter, 2);
+export function calculateSectionalDensity(weight: number, diameter: number): Result<number, Error> {
+    const result = convert(MeasureUnits.MASS, MassUnits.GRAIN, MassUnits.POUND, weight);
+    if (result.isOk()) {
+        const ret = result.value / Math.pow(diameter, 2);
+        return ok(ret);
+    }
+    else {
+        const sourceErr = result.error;
+        return err(new Error("conversion of weight for sectional density errored.", { cause: sourceErr }));
+    }
+
 }

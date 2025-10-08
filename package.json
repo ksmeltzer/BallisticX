@@ -16,8 +16,8 @@
     "test:flame": "clinic flame -- node ./perf/perf.js",
     "test:bubbleprof": "clinic bubbleprof -- node ./perf/perf.js",
     "test:heapprofiler": "clinic heapprofiler -- node ./perf/perf.js",
-    "lint": "eslint \"{src,apps,libs}/**/*.ts\"",
-    "lint:fix": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
+    "lint": "npx eslint \"{src,apps,libs}/**/*.ts\"",
+    "lint:fix": "npx eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "clean": "rm -rf ./dist",
     "build": "tsc",
     "prepack": "npm run clean && npm run build",
@@ -40,19 +40,19 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
+    "@eslint/js": "^9.37.0",
     "@eslint/json": "^0.13.2",
     "@eslint/markdown": "^7.2.0",
     "@types/node": "^24.5.2",
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
-    "eslint": "^9.35.0",
+    "eslint": "^9.37.0",
     "eslint-plugin-neverthrow": "^1.1.4",
     "globals": "^16.4.0",
     "tsx": "^4.20.6",
     "typedoc": "^0.28.13",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.44.0",
+    "typescript-eslint": "^8.46.0",
     "vitest": "^3.2.4"
   }
 }

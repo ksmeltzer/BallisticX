@@ -2,7 +2,6 @@ import { convert, MassUnits, MeasureUnits } from "./util/MeasurementUnit.js";
 import logger from "./util/Logger.js";
 import { GRAVITY } from "./BallisticX.js";
 import { ok, err, type Result } from "neverthrow";
-import { V } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
 
 
 /**
